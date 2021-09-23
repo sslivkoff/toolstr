@@ -1,0 +1,109 @@
+import numpy as np
+
+
+def format(value, **kwargs):
+
+    number_types = (
+        int,
+        float,
+        np.int32,
+        np.int64,
+        np.float32,
+        np.float64,  # redundant with float
+    )
+    if isinstance(value, number_types):
+        return format_number(value, **kwargs)
+
+
+def format_number(
+    value,
+    percentage=False,
+    scientific=None,
+    signed=False,
+    decimals=None,
+    nonfractional_decimals=None,
+    fractional_decimals=None,
+    trailing_zeros=False,
+    prefix=None,
+    postfix=None,
+):
+    """
+    TODO:
+    - sigfigs
+    - signed
+    """
+
+    # determine default formatting
+    if percentage:
+        value = value * 100
+        scientific = False
+    if scientific is None and value < 0.0001:
+        scientific = True
+    if decimals is None:
+        if value >= 1:
+            if nonfractional_decimals is None:
+                nonfractional_decimals = 2
+            decimals = nonfractional_decimals
+        if value < 1:
+            if fractional_decimals is None:
+                if scientific:
+                    fractional_decimals = 3
+                else:
+                    fractional_decimals = 6
+            decimals = fractional_decimals
+
+    if scientific:
+        format_str = '{:,.' + str(decimals) + 'e}'
+    elif decimals == 0:
+        format_str = '{:,d}'
+    else:
+        format_str = '{:,.' + str(decimals) + 'f}'
+
+    if signed:
+        format_str = format_str.replace(':', ':+')
+
+    formatted = format_str.format(value)
+
+    if trailing_zeros is not None and not trailing_zeros:
+        if '.' in formatted:
+            formatted = formatted.rstrip('0')
+            if formatted[-1] == '.':
+                formatted = formatted[:-1]
+
+        if scientific:
+            significand, mantissa = formatted.split('e')
+            significand = significand.rstrip('0')
+            if significand[-1] == '.':
+                significand = significand[:-1]
+            formatted = significand + 'e' + mantissa
+
+    if percentage:
+        formatted += '%'
+
+    if prefix is not None:
+        formatted = prefix + formatted
+    if postfix is not None:
+        formatted = formatted + postfix
+
+    return formatted
+
+
+def format_change(from_value=None, to_value=None, series=None, **format_kwargs):
+    if from_value is None and to_value is None:
+        from_value = series[0]
+        to_value = series[-1]
+
+    # arrow = '→'
+    arrow = '⟶'
+    percent_change = format(
+        to_value / from_value - 1,
+        percentage=True,
+        signed=True,
+    )
+    return (
+        format(from_value, **format_kwargs)
+        + ' ' + arrow + ' '
+        + format(to_value, **format_kwargs)
+        + ' (' + percent_change + ')'
+    )
+
