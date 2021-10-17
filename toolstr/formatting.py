@@ -20,6 +20,7 @@ def format_number(
     percentage=False,
     scientific=None,
     signed=False,
+    commas=True,
     decimals=None,
     nonfractional_decimals=None,
     fractional_decimals=None,
@@ -37,14 +38,14 @@ def format_number(
     if percentage:
         value = value * 100
         scientific = False
-    if scientific is None and value < 0.0001:
+    if scientific is None and np.abs(value) < 0.0001 and value != 0:
         scientific = True
     if decimals is None:
-        if value >= 1:
+        if np.abs(value) >= 1:
             if nonfractional_decimals is None:
                 nonfractional_decimals = 2
             decimals = nonfractional_decimals
-        if value < 1:
+        if np.abs(value) < 1:
             if fractional_decimals is None:
                 if scientific:
                     fractional_decimals = 3
@@ -59,11 +60,18 @@ def format_number(
     else:
         format_str = '{:,.' + str(decimals) + 'f}'
 
+    # remove commas
+    if not commas:
+        format_str = format_str.replace(',', '')
+
+    # add sign
     if signed:
         format_str = format_str.replace(':', ':+')
 
+    # format
     formatted = format_str.format(value)
 
+    # remove trailing zeros
     if trailing_zeros is not None and not trailing_zeros:
         if '.' in formatted:
             formatted = formatted.rstrip('0')
@@ -77,9 +85,11 @@ def format_number(
                 significand = significand[:-1]
             formatted = significand + 'e' + mantissa
 
+    # add percentage sign
     if percentage:
         formatted += '%'
 
+    # add prefix and postfix
     if prefix is not None:
         formatted = prefix + formatted
     if postfix is not None:
