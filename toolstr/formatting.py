@@ -1,18 +1,27 @@
 import numpy as np
+import tooltime
 
 
-def format(value, **kwargs):
+def format(value, format_type=None, **kwargs):
 
-    number_types = (
-        int,
-        float,
-        np.int32,
-        np.int64,
-        np.float32,
-        np.float64,  # redundant with float
-    )
-    if isinstance(value, number_types):
+    if format_type is None:
+        number_types = (
+            int,
+            float,
+            np.int32,
+            np.int64,
+            np.float32,
+            np.float64,  # redundant with float
+        )
+        if isinstance(value, number_types):
+            format_type = 'number'
+
+    if format_type == 'number':
         return format_number(value, **kwargs)
+    elif format_type == 'timestamp':
+        return tooltime.create_timestamp(value, **kwargs)
+    else:
+        raise Exception('unknown format_type: ' + str(format_type))
 
 
 def format_number(
