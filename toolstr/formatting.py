@@ -1,4 +1,3 @@
-import numpy as np
 import tooltime
 
 
@@ -6,14 +5,16 @@ def format(value, format_type=None, **kwargs):
 
     if format_type is None:
         number_types = (
-            int,
-            float,
-            np.int32,
-            np.int64,
-            np.float32,
-            np.float64,  # redundant with float
+            'int',
+            'float',
+            'int16',
+            'int32',
+            'int64',
+            'float16',
+            'float32',
+            'float64',
         )
-        if isinstance(value, number_types):
+        if type(value).__name__ in number_types:
             format_type = 'number'
 
     if format_type == 'number':
@@ -47,14 +48,14 @@ def format_number(
     if percentage:
         value = value * 100
         scientific = False
-    if scientific is None and np.abs(value) < 0.0001 and value != 0:
+    if scientific is None and abs(value) < 0.0001 and value != 0:
         scientific = True
     if decimals is None:
-        if np.abs(value) >= 1:
+        if abs(value) >= 1:
             if nonfractional_decimals is None:
                 nonfractional_decimals = 2
             decimals = nonfractional_decimals
-        if np.abs(value) < 1:
+        if abs(value) < 1:
             if fractional_decimals is None:
                 if scientific:
                     fractional_decimals = 3
