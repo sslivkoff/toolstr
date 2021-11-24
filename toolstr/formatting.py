@@ -37,12 +37,20 @@ def format_number(
     trailing_zeros=False,
     prefix=None,
     postfix=None,
+    order_of_magnitude=None,
 ):
     """
     TODO:
     - sigfigs
     - signed
     """
+
+    if order_of_magnitude:
+        value, new_postfix = _get_order_of_magnitude(value)
+        if postfix is None:
+            postfix = new_postfix
+        else:
+            postfix = postfix = new_postfix
 
     # determine default formatting
     if percentage:
@@ -126,4 +134,21 @@ def format_change(from_value=None, to_value=None, series=None, **format_kwargs):
         + format(to_value, **format_kwargs)
         + ' (' + percent_change + ')'
     )
+
+
+def _get_order_of_magnitude(value):
+    if value >= 1e18:
+        raise NotImplementedError('value too big')
+    elif value >= 1e15:
+        return value / 1e15, 'Q'
+    elif value >= 1e12:
+        return value / 1e12, 'T'
+    elif value >= 1e9:
+        return value / 1e9, 'B'
+    elif value >= 1e6:
+        return value / 1e6, 'M'
+    elif value >= 1e3:
+        return value / 1e3, 'K'
+    else:
+        return value, ''
 
