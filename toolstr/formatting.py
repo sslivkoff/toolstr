@@ -1,44 +1,50 @@
+import typing
+
 import tooltime
 
+from . import spec
 
-def format(value, format_type=None, **kwargs):
+
+def format(value, format_type=None, **kwargs) -> str:
 
     if format_type is None:
-        number_types = (
-            'int',
-            'float',
-            'int16',
-            'int32',
-            'int64',
-            'float16',
-            'float32',
-            'float64',
-        )
-        if type(value).__name__ in number_types:
+        if isinstance(value, typing.SupportsFloat):
             format_type = 'number'
 
     if format_type == 'number':
         return format_number(value, **kwargs)
     elif format_type == 'timestamp':
-        return tooltime.create_timestamp(value, **kwargs)
+        return format_timestamp(value, **kwargs)
     else:
         raise Exception('unknown format_type: ' + str(format_type))
 
 
+def format_timestamp(
+    timestamp: tooltime.Timestamp,
+    representation: tooltime.TimestampStrRepresentation = 'TimestampISO',
+    **kwargs,
+) -> str:
+    return tooltime.convert_timestamp(
+        timestamp,
+        to_representation=representation,
+        **kwargs,
+    )
+
+
 def format_number(
-    value,
-    percentage=False,
-    scientific=None,
-    signed=False,
-    commas=True,
-    decimals=None,
-    nonfractional_decimals=None,
-    fractional_decimals=None,
-    trailing_zeros=False,
-    prefix=None,
-    postfix=None,
-    order_of_magnitude=None,
-):
+    value: typing.SupportsFloat,
+    percentage: bool = False,
+    scientific: typing.Optional[bool] = None,
+    signed: bool = False,
+    commas: bool = True,
+    decimals: typing.Optional[int] = None,
+    nonfractional_decimals: typing.Optional[int] = None,
+    fractional_decimals: typing.Optional[int] = None,
+    trailing_zeros: bool = False,
+    prefix: typing.Optional[str] = None,
+    postfix: typing.Optional[str] = None,
+    order_of_magnitude: bool = False,
+) -> str:
     """
     TODO:
     - sigfigs
@@ -53,17 +59,18 @@ def format_number(
             postfix = postfix = new_postfix
 
     # determine default formatting
+    numeric = spec.to_numeric(value)
     if percentage:
-        value = value * 100
+        numeric = numeric * 100
         scientific = False
-    if scientific is None and abs(value) < 0.0001 and value != 0:
+    if scientific is None and abs(numeric) < 0.0001 and numeric != 0:
         scientific = True
     if decimals is None:
-        if abs(value) >= 1:
+        if abs(numeric) >= 1:
             if nonfractional_decimals is None:
                 nonfractional_decimals = 2
             decimals = nonfractional_decimals
-        if abs(value) < 1:
+        if abs(numeric) < 1:
             if fractional_decimals is None:
                 if scientific:
                     fractional_decimals = 3
@@ -87,7 +94,7 @@ def format_number(
         format_str = format_str.replace(':', ':+')
 
     # format
-    formatted = format_str.format(value)
+    formatted = format_str.format(numeric)
 
     # remove trailing zeros
     if trailing_zeros is not None and not trailing_zeros:
@@ -130,9 +137,13 @@ def format_change(from_value=None, to_value=None, series=None, **format_kwargs):
     )
     return (
         format(from_value, **format_kwargs)
-        + ' ' + arrow + ' '
+        + ' '
+        + arrow
+        + ' '
         + format(to_value, **format_kwargs)
-        + ' (' + percent_change + ')'
+        + ' ('
+        + percent_change
+        + ')'
     )
 
 

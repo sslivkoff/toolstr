@@ -8,5 +8,8 @@ setuptools.setup(
     install_requires=[
         'tooltime',
     ],
+    package_data={
+        'toolstr': ['py.typed'],
+    }
 )
 
