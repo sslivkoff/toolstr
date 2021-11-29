@@ -1,13 +1,18 @@
+import typing
+
+from . import spec
+
+
 def get_border_chars(
-    thick=None,
-    double=None,
-    dashes=None,
-    ascii=None,
-    double_horizontal=None,
-    double_vertical=None,
-    thick_horizontal=None,
-    thick_vertical=None,
-):
+    thick: typing.Optional[bool] = None,
+    double: typing.Optional[bool] = None,
+    dashes: typing.Optional[int] = None,
+    ascii: typing.Optional[bool] = None,
+    double_horizontal: typing.Optional[bool] = None,
+    double_vertical: typing.Optional[bool] = None,
+    thick_horizontal: typing.Optional[bool] = None,
+    thick_vertical: typing.Optional[bool] = None,
+) -> spec.BorderCharSet:
     """
     TODO: rounded corners
     """
@@ -71,31 +76,55 @@ def get_border_chars(
         return {
             'horizontal': '╌',
             'vertical': '╎',
+            'upper_left': '┌',
+            'upper_right': '┐',
+            'lower_left': '└',
+            'lower_right': '┘',
         }
     elif thick and (not double) and dashes == 2:
         return {
             'horizontal': '╍',
             'vertical': '╏',
+            'upper_left': '┏',
+            'upper_right': '┓',
+            'lower_left': '┗',
+            'lower_right': '┛',
         }
     elif (not thick) and (not double) and dashes == 3:
         return {
             'horizontal': '┄',
             'vertical': '┆',
+            'upper_left': '┌',
+            'upper_right': '┐',
+            'lower_left': '└',
+            'lower_right': '┘',
         }
     elif thick and (not double) and dashes == 3:
         return {
             'horizontal': '┅',
             'vertical': '┇',
+            'upper_left': '┏',
+            'upper_right': '┓',
+            'lower_left': '┗',
+            'lower_right': '┛',
         }
     elif (not thick) and (not double) and dashes == 3:
         return {
             'horizontal': '┈',
             'vertical': '┊',
+            'upper_left': '┌',
+            'upper_right': '┐',
+            'lower_left': '└',
+            'lower_right': '┘',
         }
     elif thick and (not double) and dashes == 3:
         return {
             'horizontal': '┉',
             'vertical': '┋',
+            'upper_left': '┏',
+            'upper_right': '┓',
+            'lower_left': '┗',
+            'lower_right': '┛',
         }
     elif thick_horizontal and (not double) and dashes == 0:
         return {
@@ -138,20 +167,20 @@ def get_border_chars(
 
 
 def get_outlined_text(
-    text,
-    width=None,
-    justify=None,
-    upper_border=None,
-    lower_border=None,
-    left_border=None,
-    right_border=None,
-    pad=None,
-    upper_pad=None,
-    lower_pad=None,
-    left_pad=None,
-    right_pad=None,
-    **border_style
-):
+    text: str,
+    width: typing.Optional[int] = None,
+    justify: typing.Optional[spec.HorizontalJustification] = None,
+    upper_border: typing.Optional[bool] = None,
+    lower_border: typing.Optional[bool] = None,
+    left_border: typing.Optional[bool] = None,
+    right_border: typing.Optional[bool] = None,
+    pad: typing.Optional[int] = None,
+    upper_pad: typing.Optional[int] = None,
+    lower_pad: typing.Optional[int] = None,
+    left_pad: typing.Optional[int] = None,
+    right_pad: typing.Optional[int] = None,
+    **border_style,
+) -> str:
 
     # set defaults
     if justify is None:
@@ -258,20 +287,20 @@ def get_outlined_text(
 
 
 def print_outlined_text(
-    text,
-    width=None,
-    justify=None,
-    upper_border=None,
-    lower_border=None,
-    left_border=None,
-    right_border=None,
-    pad=None,
-    upper_pad=None,
-    lower_pad=None,
-    left_pad=None,
-    right_pad=None,
+    text: str,
+    width: typing.Optional[int] = None,
+    justify: typing.Optional[spec.HorizontalJustification] = None,
+    upper_border: typing.Optional[bool] = None,
+    lower_border: typing.Optional[bool] = None,
+    left_border: typing.Optional[bool] = None,
+    right_border: typing.Optional[bool] = None,
+    pad: typing.Optional[int] = None,
+    upper_pad: typing.Optional[int] = None,
+    lower_pad: typing.Optional[int] = None,
+    left_pad: typing.Optional[int] = None,
+    right_pad: typing.Optional[int] = None,
     **border_style,
-):
+) -> None:
     string = get_outlined_text(
         text=text,
         width=width,
@@ -291,15 +320,15 @@ def print_outlined_text(
 
 
 def print_text_box(
-    text,
-    width=None,
-    justify=None,
-    upper_pad=0,
-    lower_pad=0,
-    left_pad=1,
-    right_pad=1,
-    **border_style
-):
+    text: str,
+    width: typing.Optional[int] = None,
+    justify: typing.Optional[spec.HorizontalJustification] = None,
+    upper_pad: int = 0,
+    lower_pad: int = 0,
+    left_pad: int = 1,
+    right_pad: int = 1,
+    **border_style,
+) -> None:
     print_outlined_text(
         text,
         width=width,
@@ -317,12 +346,12 @@ def print_text_box(
 
 
 def print_header(
-    text,
-    width=None,
-    justify=None,
-    pad=0,
-    **border_style
-):
+    text: str,
+    width: typing.Optional[int] = None,
+    justify: typing.Optional[spec.HorizontalJustification] = None,
+    pad: int = 0,
+    **border_style,
+) -> None:
     print_outlined_text(
         text,
         width=width,

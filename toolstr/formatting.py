@@ -123,8 +123,17 @@ def format_number(
     return formatted
 
 
-def format_change(from_value=None, to_value=None, series=None, **format_kwargs):
-    if from_value is None and to_value is None:
+def format_change(
+    from_value: typing.Optional[spec.Numeric] = None,
+    to_value: typing.Optional[spec.Numeric] = None,
+    series: typing.Optional[typing.Sequence[spec.Numeric]] = None,
+    **format_kwargs,
+) -> str:
+    if from_value is None or to_value is None:
+        if series is None:
+            raise Exception(
+                'must specify either series, or from_value and to_value'
+            )
         from_value = series[0]
         to_value = series[-1]
 
@@ -147,7 +156,10 @@ def format_change(from_value=None, to_value=None, series=None, **format_kwargs):
     )
 
 
-def _get_order_of_magnitude(value):
+def _get_order_of_magnitude(
+    value: typing.SupportsFloat,
+) -> tuple[typing.Union[int, float], str]:
+    value = spec.to_numeric(value)
     if value >= 1e18:
         raise NotImplementedError('value too big')
     elif value >= 1e15:
