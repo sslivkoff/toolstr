@@ -24,7 +24,7 @@ def to_numeric(value: typing.SupportsFloat) -> typing.Union[int, float]:
     supports_int = hasattr(value, '__int__')
 
     if supports_int and type(value).__name__.startswith('int'):
-        return int(value)
+        return int(value)  # type: ignore
     else:
         return float(value)
 
