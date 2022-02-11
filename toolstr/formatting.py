@@ -10,7 +10,12 @@ from . import spec
 def format(value, format_type=None, **kwargs) -> str:
 
     if format_type is None:
-        if isinstance(value, typing.SupportsFloat):
+
+        # python3.7 compatibility
+        # supports_int = isinstance(value, typing.SupportsFloat)
+        supports_int = hasattr(value, '__int__')
+
+        if supports_int:
             format_type = 'number'
 
     if format_type == 'number':
