@@ -1,10 +1,11 @@
 import typing
+from typing_extensions import Literal, TypedDict
 
 
-HorizontalJustification = typing.Literal['left', 'right', 'center']
+HorizontalJustification = Literal['left', 'right', 'center']
 
 
-class BorderCharSet(typing.TypedDict):
+class BorderCharSet(TypedDict):
     horizontal: str
     vertical: str
     upper_left: str
