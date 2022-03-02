@@ -66,7 +66,7 @@ def format_number(
             postfix = postfix = new_postfix
 
     # determine default formatting
-    numeric = spec.to_numeric(value)
+    numeric = spec.to_numeric_type(value)
     if percentage:
         numeric = numeric * 100
         scientific = False
@@ -166,7 +166,7 @@ def format_change(
 def _get_order_of_magnitude(
     value: typing.SupportsFloat,
 ) -> tuple[typing.Union[int, float], str]:
-    value = spec.to_numeric(value)
+    value = spec.to_numeric_type(value)
     if value >= 1e18:
         raise NotImplementedError('value too big')
     elif value >= 1e15:

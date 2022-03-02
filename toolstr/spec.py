@@ -17,7 +17,7 @@ class BorderCharSet(TypedDict):
 Numeric = typing.Union[int, float]
 
 
-def to_numeric(value: typing.SupportsFloat) -> typing.Union[int, float]:
+def to_numeric_type(value: typing.SupportsFloat) -> typing.Union[int, float]:
 
     # python3.7 compatibility
     # supports_int = isinstance(value, typing.SupportsInt)
