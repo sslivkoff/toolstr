@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import typing
 from typing_extensions import Literal, TypedDict
 
@@ -12,6 +14,15 @@ class BorderCharSet(TypedDict):
     upper_right: str
     lower_left: str
     lower_right: str
+
+
+class Grid(TypedDict):
+    n_rows: int
+    n_columns: int
+    xmin: typing.Union[int, float]
+    xmax: typing.Union[int, float]
+    ymin: typing.Union[int, float]
+    ymax: typing.Union[int, float]
 
 
 Numeric = typing.Union[int, float]
