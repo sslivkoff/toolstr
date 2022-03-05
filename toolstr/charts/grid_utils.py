@@ -10,6 +10,30 @@ if typing.TYPE_CHECKING:
     NumpyArray = numpy.typing.NDArray
 
 
+def create_grid(
+    n_rows: int,
+    n_columns: int,
+    xmin: typing.Union[int, float],
+    xmax: typing.Union[int, float],
+    ymin: typing.Union[int, float],
+    ymax: typing.Union[int, float],
+    sample_mode: spec.SampleMode = None,
+) -> spec.Grid:
+
+    row_factor, column_factor = spec.sample_mode_size[sample_mode]
+    n_rows = n_rows * row_factor
+    n_columns = n_columns * column_factor
+
+    return {
+        'n_rows': n_rows,
+        'n_columns': n_columns,
+        'xmin': xmin,
+        'xmax': xmax,
+        'ymin': ymin,
+        'ymax': ymax,
+    }
+
+
 def get_row_borders(grid: spec.Grid) -> NumpyArray:
     import numpy as np
 
