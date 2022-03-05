@@ -1,10 +1,40 @@
 from . import grid_utils
 
 
-def create_blank_raster(grid):
-    import numpy as np
+def create_blank_raster(grid, container_format='array', cell_format=int):
 
-    return np.zeros((grid['n_rows'], grid['n_columns']), dtype=int)
+    if container_format == 'array':
+        import numpy as np
+
+        if cell_format == int:
+            return np.zeros((grid['n_rows'], grid['n_columns']), dtype=int)
+        elif cell_format is str:
+            return np.zeros((grid['n_rows'], grid['n_columns']), dtype='<U1')
+        else:
+            raise Exception('unknown cell format: ' + str(cell_format))
+
+    elif container_format == 'list_of_rows':
+        if cell_format is int:
+            cell = 0
+        elif cell_format is str:
+            cell = ' '
+        else:
+            raise Exception('unknown cell format: ' + str(cell_format))
+
+        return [[[cell] * grid['n_columns']] for row in grid['n_rows']]
+
+    elif container_format == 'list_of_columns':
+        if cell_format is int:
+            cell = 0
+        elif cell_format is str:
+            cell = ' '
+        else:
+            raise Exception('unknown cell format: ' + str(cell_format))
+
+        return [[[cell] * grid['n_rows']] for row in grid['n_columns']]
+
+    else:
+        raise Exception('unknown container_format: ' + str(container_format))
 
 
 def rasterize_by_column(yvals, grid):
