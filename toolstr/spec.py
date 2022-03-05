@@ -16,6 +16,24 @@ class BorderCharSet(TypedDict):
     lower_right: str
 
 
+SampleMode = Literal[
+    None,
+    'height_split',
+    'width_split',
+    'quadants',
+    'braille',
+]
+
+# (rows, columns)
+sample_mode_size = {
+    None: (1, 1),
+    'height_split': (8, 1),
+    'width_split': (1, 8),
+    'quadants': (2, 2),
+    'braille': (4, 2),
+}
+
+
 class Grid(TypedDict):
     n_rows: int
     n_columns: int
