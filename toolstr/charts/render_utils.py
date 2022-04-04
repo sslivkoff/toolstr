@@ -1,6 +1,7 @@
 import toolstr
 
-# from . import chart_dicts
+from .. import spec
+from . import char_dicts
 from . import grid_utils
 
 
@@ -8,7 +9,20 @@ def array_to_tuple(array):
     return tuple(tuple(row) for row in array)
 
 
-def render_supergrid(array, rows_per_cell, columns_per_cell, char_dict):
+def render_supergrid(
+    array,
+    rows_per_cell=None,
+    columns_per_cell=None,
+    char_dict=None,
+    sample_mode=None,
+    color_grid=None,
+    color_map=None,
+):
+
+    if rows_per_cell is None or columns_per_cell is None or char_dict is None:
+        rows_per_cell, columns_per_cell = spec.sample_mode_size[sample_mode]
+        char_dict = char_dicts.get_char_dict(sample_mode)
+
     import numpy as np
 
     array = array[::-1]
@@ -17,11 +31,22 @@ def render_supergrid(array, rows_per_cell, columns_per_cell, char_dict):
     super_columns = columns / columns_per_cell
 
     new_rows = []
-    for super_row in np.vsplit(array, super_rows):
+    super_rows = np.vsplit(array, super_rows)
+    for sr, super_row in enumerate(super_rows):
         new_row = []
-        for super_cell in np.hsplit(super_row, super_columns):
+        super_cells = np.hsplit(super_row, super_columns)
+        for sc, super_cell in enumerate(super_cells):
+
+            # get char
             as_tuple = array_to_tuple(super_cell)
-            new_row.append(char_dict[as_tuple])
+            char_str = char_dict[as_tuple]
+
+            # get color
+            if color_grid is not None and char_str not in [' ', '⠀']:
+                color = color_map[color_grid[sr, sc]]
+                char_str = '[' + color + ']' + char_str + '[/' + color + ']'
+
+            new_row.append(char_str)
 
         new_row = ''.join(new_row)
         new_rows.append(new_row)
@@ -42,8 +67,9 @@ def render_y_axis(grid, width=8, n_ticks=4, tick_length=2, label_gap=0):
     for r in range(grid['n_rows']):
 
         row_center = grid_utils.get_row_center(row=r, grid=grid)
-        if abs(row_center) < 1e-14:
+        if abs(row_center) < 1e-10:
             row_center = 0
+
         label = toolstr.format(row_center, order_of_magnitude=True)
         label = label[:label_width]
         label = label.rjust(label_width)
@@ -70,7 +96,13 @@ def render_y_axis(grid, width=8, n_ticks=4, tick_length=2, label_gap=0):
     return '\n'.join(rows)
 
 
-def render_x_axis(grid, n_ticks=3, tick_length=2, include_label_gap=False):
+def render_x_axis(
+    grid,
+    n_ticks=3,
+    tick_length=2,
+    include_label_gap=False,
+    formatter=None,
+):
 
     import numpy as np
 
@@ -116,16 +148,21 @@ def render_x_axis(grid, n_ticks=3, tick_length=2, include_label_gap=False):
     if include_label_gap:
         rows.append('')
 
+    if formatter is None:
+        import functools
+
+        formatter = functools.partial(toolstr.format, order_of_magnitude=True)
+
     # label row
     labels = ' ' * grid['n_columns']
-    xmin_label = toolstr.format(grid['xmin'], order_of_magnitude=True)
-    xmax_label = toolstr.format(grid['xmax'], order_of_magnitude=True)
+    xmin_label = formatter(grid['xmin'])
+    xmax_label = formatter(grid['xmax'])
     labels = xmin_label + labels[len(xmin_label) :]
     labels = labels[: -len(xmax_label)] + xmax_label
     if n_ticks > 2:
         for tick_index in tick_indices[1:-1]:
             column_center = grid_utils.get_column_center(tick_index, grid)
-            label = toolstr.format(column_center, order_of_magnitude=True)
+            label = formatter(column_center)
             label_start = 1 + tick_index - int(np.ceil(len(label) / 2))
             labels = (
                 labels[:label_start]

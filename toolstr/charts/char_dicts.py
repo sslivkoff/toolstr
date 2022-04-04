@@ -1,6 +1,6 @@
 # see https://en.wikipedia.org/wiki/Box-drawing_character
 
-quadrant_dict = {
+quadrants_dict = {
     #
     # no block
     ((0, 0), (0, 0)): ' ',
@@ -65,7 +65,7 @@ def get_char_dict(name):
         return get_braille_dict()
     else:
         return {
-            'quadrant': quadrant_dict,
+            'quadrants': quadrants_dict,
             'width_split': width_split_dict,
             'height_split': height_split_dict,
         }[name]

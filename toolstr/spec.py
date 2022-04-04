@@ -20,7 +20,7 @@ SampleMode = Literal[
     None,
     'height_split',
     'width_split',
-    'quadants',
+    'quadrants',
     'braille',
 ]
 
@@ -29,7 +29,7 @@ sample_mode_size = {
     None: (1, 1),
     'height_split': (8, 1),
     'width_split': (1, 8),
-    'quadants': (2, 2),
+    'quadrants': (2, 2),
     'braille': (4, 2),
 }
 
