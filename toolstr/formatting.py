@@ -107,8 +107,6 @@ def format_number(
     # format
     formatted = format_str.format(numeric)
 
-    raise Exception()
-
     # remove trailing zeros
     if trailing_zeros is not None and not trailing_zeros:
         if '.' in formatted:
