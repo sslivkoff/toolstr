@@ -74,9 +74,13 @@ def format_number(
         scientific = True
     if decimals is None:
         if abs(numeric) >= 1:
-            if nonfractional_decimals is None:
-                nonfractional_decimals = 2
-            decimals = nonfractional_decimals
+            if isinstance(value, int):
+                nonfractional_decimals = 0
+                decimals = 0
+            else:
+                if nonfractional_decimals is None:
+                    nonfractional_decimals = 2
+                decimals = nonfractional_decimals
         if abs(numeric) < 1:
             if fractional_decimals is None:
                 if scientific:
@@ -102,6 +106,8 @@ def format_number(
 
     # format
     formatted = format_str.format(numeric)
+
+    raise Exception()
 
     # remove trailing zeros
     if trailing_zeros is not None and not trailing_zeros:
