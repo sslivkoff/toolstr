@@ -1,6 +1,7 @@
 import math
 
 from . import grid_utils
+from . import line_utils
 
 
 def create_blank_raster(grid, container_format='array', cell_format=int):
@@ -55,7 +56,6 @@ def rasterize_by_column(yvals, grid):
 
 
 def rasterize_by_lines(yvals, grid):
-    import skimage.draw
 
     assert len(yvals) == grid['n_columns']
 
@@ -64,7 +64,7 @@ def rasterize_by_lines(yvals, grid):
         row = grid_utils.get_row(yval, grid)
         row_next = grid_utils.get_row(yvals[column + 1], grid)
 
-        rows, columns = skimage.draw.line(
+        rows, columns = line_utils.draw_line(
             row,
             column,
             row_next,
@@ -175,4 +175,3 @@ def raster_bar_chart(values, grid, bar_width, bar_gap, start_gap=0):
             )
 
     return raster
-
