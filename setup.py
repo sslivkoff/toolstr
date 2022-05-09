@@ -8,10 +8,8 @@ setuptools.setup(
     install_requires=[
         'tooltime',
         'typing_extensions',
-        'scikit-image',
     ],
     package_data={
         'toolstr': ['py.typed'],
     }
 )
-
