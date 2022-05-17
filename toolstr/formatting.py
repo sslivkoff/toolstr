@@ -26,9 +26,38 @@ def format(value, format_type=None, **kwargs) -> str:
         raise Exception('unknown format_type: ' + str(format_type))
 
 
+def format_nbytes(
+    nbytes: int,
+    decimals: int = 2,
+    commas=False,
+    **format_kwargs,
+) -> str:
+    if not isinstance(nbytes, int):
+        raise Exception('input must be integer')
+    elif nbytes < 0:
+        raise Exception('input must be non-negative')
+    elif nbytes == 0:
+        return '0B'
+    else:
+        prefixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+        divisions = 0
+        while nbytes >= 1024:
+            nbytes = nbytes / 1024
+            divisions = divisions + 1
+            if divisions + 1 >= len(prefixes):
+                break
+        number_str = format_number(
+            nbytes,
+            decimals=decimals,
+            commas=commas,
+            **format_kwargs,
+        )
+        return number_str + prefixes[divisions]
+
+
 def format_timestamp(
     timestamp: tooltime.Timestamp,
-    representation: tooltime.TimestampStrRepresentation = 'TimestampISO',
+    representation: tooltime.TimestampExtendedRepresentation = 'TimestampISO',
     **kwargs,
 ) -> str:
     return tooltime.convert_timestamp(
@@ -171,18 +200,18 @@ def _get_order_of_magnitude(
     value: typing.SupportsFloat,
 ) -> tuple[typing.Union[int, float], str]:
     value = spec.to_numeric_type(value)
-    if value >= 1e18:
+    abs_value = abs(value)
+    if abs_value >= 1e18:
         raise NotImplementedError('value too big')
-    elif value >= 1e15:
+    elif abs_value >= 1e15:
         return value / 1e15, 'Q'
-    elif value >= 1e12:
+    elif abs_value >= 1e12:
         return value / 1e12, 'T'
-    elif value >= 1e9:
+    elif abs_value >= 1e9:
         return value / 1e9, 'B'
-    elif value >= 1e6:
+    elif abs_value >= 1e6:
         return value / 1e6, 'M'
-    elif value >= 1e3:
+    elif abs_value >= 1e3:
         return value / 1e3, 'K'
     else:
         return value, ''
-
