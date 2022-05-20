@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import typing
 
 from . import spec
@@ -12,6 +14,8 @@ def get_border_chars(
     double_vertical: typing.Optional[bool] = None,
     thick_horizontal: typing.Optional[bool] = None,
     thick_vertical: typing.Optional[bool] = None,
+    rounded: typing.Optional[bool] = None,
+    style: str | None = None,
 ) -> spec.BorderCharSet:
     """
     TODO: rounded corners
@@ -35,135 +39,225 @@ def get_border_chars(
         or (double_vertical and thick_vertical)
     ):
         raise Exception('cannot mix horizontal/vertical split styles')
+    mixed = (
+        double_horizontal
+        or double_vertical
+        or thick_horizontal
+        or thick_vertical
+    )
 
     if ascii:
-        return {
+        border_style = {
             'horizontal': '-',
             'vertical': '|',
             'upper_left': '-',
             'upper_right': '-',
             'lower_left': '-',
             'lower_right': '-',
+            'cross': '+',
+            'upper_t': '-',
+            'lower_t': '-',
+            'left_t': '|',
+            'right_t': '|',
         }
-    elif (not thick) and (not double) and (dashes == 0):
-        return {
+    elif (not thick) and (not double) and (dashes == 0) and not mixed:
+        border_style = {
             'horizontal': '─',
             'vertical': '│',
             'upper_left': '┌',
             'upper_right': '┐',
             'lower_left': '└',
             'lower_right': '┘',
+            'cross': '┼',
+            'upper_t': '┬',
+            'lower_t': '┴',
+            'left_t': '├',
+            'right_t': '┤',
         }
-    elif (not thick) and double and (dashes == 0):
-        return {
+    elif (not thick) and double and (dashes == 0) and not mixed:
+        border_style = {
             'horizontal': '═',
             'vertical': '║',
             'upper_left': '╔',
             'upper_right': '╗',
             'lower_left': '╚',
             'lower_right': '╝',
+            'cross': '╬',
+            'upper_t': '╦',
+            'lower_t': '╩',
+            'left_t': '╠',
+            'right_t': '╣',
         }
-    elif thick and (not double) and (dashes == 0):
-        return {
+    elif thick and (not double) and (dashes == 0) and not mixed:
+        border_style = {
             'horizontal': '━',
             'vertical': '┃',
             'upper_left': '┏',
             'upper_right': '┓',
             'lower_left': '┗',
             'lower_right': '┛',
+            'cross': '╋',
+            'upper_t': '┳',
+            'lower_t': '┻',
+            'left_t': '┣',
+            'right_t': '┫',
         }
-    elif (not thick) and (not double) and dashes == 2:
-        return {
+    elif (not thick) and (not double) and dashes == 2 and not mixed:
+        border_style = {
             'horizontal': '╌',
             'vertical': '╎',
             'upper_left': '┌',
             'upper_right': '┐',
             'lower_left': '└',
             'lower_right': '┘',
+            'cross': '┼',
+            'upper_t': '┬',
+            'lower_t': '┴',
+            'left_t': '├',
+            'right_t': '┤',
         }
-    elif thick and (not double) and dashes == 2:
-        return {
+    elif thick and (not double) and dashes == 2 and not mixed:
+        border_style = {
             'horizontal': '╍',
             'vertical': '╏',
             'upper_left': '┏',
             'upper_right': '┓',
             'lower_left': '┗',
             'lower_right': '┛',
+            'cross': '╋',
+            'upper_t': '┳',
+            'lower_t': '┻',
+            'left_t': '┣',
+            'right_t': '┫',
         }
-    elif (not thick) and (not double) and dashes == 3:
-        return {
+    elif (not thick) and (not double) and dashes == 3 and not mixed:
+        border_style = {
             'horizontal': '┄',
             'vertical': '┆',
             'upper_left': '┌',
             'upper_right': '┐',
             'lower_left': '└',
             'lower_right': '┘',
+            'cross': '┼',
+            'upper_t': '┬',
+            'lower_t': '┴',
+            'left_t': '├',
+            'right_t': '┤',
         }
-    elif thick and (not double) and dashes == 3:
-        return {
+    elif thick and (not double) and dashes == 3 and not mixed:
+        border_style = {
             'horizontal': '┅',
             'vertical': '┇',
             'upper_left': '┏',
             'upper_right': '┓',
             'lower_left': '┗',
             'lower_right': '┛',
+            'cross': '╋',
+            'upper_t': '┳',
+            'lower_t': '┻',
+            'left_t': '┣',
+            'right_t': '┫',
         }
-    elif (not thick) and (not double) and dashes == 3:
-        return {
+    elif (not thick) and (not double) and dashes == 3 and not mixed:
+        border_style = {
             'horizontal': '┈',
             'vertical': '┊',
             'upper_left': '┌',
             'upper_right': '┐',
             'lower_left': '└',
             'lower_right': '┘',
+            'cross': '┼',
+            'upper_t': '┬',
+            'lower_t': '┴',
+            'left_t': '├',
+            'right_t': '┤',
         }
-    elif thick and (not double) and dashes == 3:
-        return {
+    elif thick and (not double) and dashes == 3 and not mixed:
+        border_style = {
             'horizontal': '┉',
             'vertical': '┋',
             'upper_left': '┏',
             'upper_right': '┓',
             'lower_left': '┗',
             'lower_right': '┛',
+            'cross': '╋',
+            'upper_t': '┳',
+            'lower_t': '┻',
+            'left_t': '┣',
+            'right_t': '┫',
         }
     elif thick_horizontal and (not double) and dashes == 0:
-        return {
+        border_style = {
             'horizontal': '━',
             'vertical': '│',
             'upper_left': '┍',
             'upper_right': '┑',
             'lower_left': '┕',
             'lower_right': '┙',
+            'cross': '┿',
+            'upper_t': '┯',
+            'lower_t': '┷',
+            'left_t': '┝',
+            'right_t': '┥',
         }
     elif thick_vertical and (not double) and dashes == 0:
-        return {
+        border_style = {
             'horizontal': '─',
             'vertical': '┃',
             'upper_left': '┎',
             'upper_right': '┒',
             'lower_left': '┖',
             'lower_right': '┚',
+            'cross': '╂',
+            'upper_t': '┰',
+            'lower_t': '┸',
+            'left_t': '┠',
+            'right_t': '┨',
         }
     elif (not thick) and double_horizontal and dashes == 0:
-        return {
+        border_style = {
             'horizontal': '═',
             'vertical': '│',
             'upper_left': '╒',
             'upper_right': '╕',
             'lower_left': '╘',
             'lower_right': '╛',
+            'cross': '╪',
+            'upper_t': '╤',
+            'lower_t': '╧',
+            'left_t': '╞',
+            'right_t': '╡',
         }
     elif (not thick) and double_vertical and dashes == 0:
-        return {
+        border_style = {
             'horizontal': '─',
             'vertical': '║',
             'upper_left': '╓',
             'upper_right': '╖',
             'lower_left': '╙',
             'lower_right': '╜',
+            'cross': '╫',
+            'upper_t': '╥',
+            'lower_t': '╨',
+            'left_t': '╟',
+            'right_t': '╢',
         }
     else:
         raise Exception('could not find specified borders')
+
+    if rounded:
+        border_style['upper_left'] = '╭'
+        border_style['upper_right'] = '╮'
+        border_style['lower_left'] = '╰'
+        border_style['lower_right'] = '╯'
+
+    if style:
+        border_style = {
+            key: '[' + style + ']' + value + '[/' + style + ']'
+            for key, value in border_style.items()
+        }
+
+    return border_style
 
 
 def get_outlined_text(
@@ -260,9 +354,13 @@ def get_outlined_text(
         if justify == 'left':
             line = line.ljust(text_width)
         elif justify == 'right':
-            line = line.ljust(text_width)
+            line = line.rjust(text_width)
         elif justify == 'center':
             line = line.center(text_width)
+        elif justify is not None:
+            pass
+        else:
+            raise Exception('unknown justification: ' + str(justify))
         line = (
             middle_left_prefix
             + left_pad_str
@@ -363,4 +461,3 @@ def print_header(
         right_border=False,
         **border_style,
     )
-
