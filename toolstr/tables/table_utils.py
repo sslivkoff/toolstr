@@ -111,6 +111,7 @@ def print_table(
         column_style=column_style,
         header_style=header_style,
         use_styles=use_styles,
+        add_row_index=add_row_index,
     )
 
     # layout table as single str
@@ -212,6 +213,7 @@ def _stringify_all(
     column_style,
     header_style,
     use_styles,
+    add_row_index,
 ):
 
     # convert cells to str
@@ -237,8 +239,12 @@ def _stringify_all(
     if headers is not None:
         if header_justify is None:
             header_justify = 'right'
+        if isinstance(header_justify, list) and add_row_index:
+            header_justify = [header_justify[0]] + header_justify
         if isinstance(header_justify, str):
             header_justify = [header_justify] * len(headers)
+        if header_justify is not None and len(header_justify) != len(headers):
+            raise Exception('header_justify has wrong length')
         str_headers = _trim_justify_cells(
             str_headers, column_widths, header_justify, justify
         )
@@ -250,6 +256,12 @@ def _stringify_all(
             _stylize_row(str_row, style, column_style) for str_row in str_cells
         ]
         if headers is not None:
+            if isinstance(header_style, list) and add_row_index:
+                header_style = [header_style[0]] + header_style
+            if isinstance(header_style, str):
+                header_style = [header_style] * len(headers)
+            if header_style is not None and len(header_style) != len(headers):
+                raise Exception('header_style has wrong length')
             str_headers = _stylize_row(str_headers, style, header_style)
 
     return str_cells, str_headers, column_widths
