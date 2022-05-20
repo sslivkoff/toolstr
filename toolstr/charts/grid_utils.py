@@ -97,5 +97,5 @@ def get_row(
     else:
         import numpy as np
 
-        return np.searchsorted(row_borders, yval) - 1
+        return np.searchsorted(row_borders, yval) - 1  # type: ignore
 

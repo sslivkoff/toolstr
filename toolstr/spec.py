@@ -5,6 +5,7 @@ from typing_extensions import Literal, TypedDict
 
 
 HorizontalJustification = Literal['left', 'right', 'center']
+VerticalJustification = Literal['top', 'bottom', 'center']
 
 
 class BorderCharSet(TypedDict):
@@ -14,6 +15,11 @@ class BorderCharSet(TypedDict):
     upper_right: str
     lower_left: str
     lower_right: str
+    cross: str
+    lower_t: str
+    upper_t: str
+    left_t: str
+    right_t: str
 
 
 SampleMode = Literal[
@@ -56,4 +62,3 @@ def to_numeric_type(value: typing.SupportsFloat) -> typing.Union[int, float]:
         return int(value)  # type: ignore
     else:
         return float(value)
-

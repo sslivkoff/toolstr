@@ -19,7 +19,7 @@ def draw_line(
     # determine backend
     if backend is None:
         try:
-            import skimage.draw
+            import skimage.draw  # type: ignore
 
             backend = 'c'
         except ImportError:
@@ -64,8 +64,8 @@ def draw_line_python(
     dr = abs(r1 - r0)
     dc = abs(c1 - c0)
 
-    rr = np.zeros(max(dc, dr) + 1, dtype=np.int)
-    cc = np.zeros(max(dc, dr) + 1, dtype=np.int)
+    rr = np.zeros(max(dc, dr) + 1, dtype=np.int64)
+    cc = np.zeros(max(dc, dr) + 1, dtype=np.int64)
 
     if (c1 - c) > 0:
         sc = 1
@@ -98,4 +98,4 @@ def draw_line_python(
     rr[dc] = r1
     cc[dc] = c1
 
-    return rr, cc
+    return rr, cc  # type: ignore
