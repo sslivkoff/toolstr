@@ -1,10 +1,7 @@
 """
 
 TODO
-- header_border_style different from border_style
-    - also use header_border_style for the outer_border if active
 - multiline headers
-- be able to do bold header names
 - header border style when header_location is on bottom
 
 Saving until later
@@ -12,6 +9,7 @@ Saving until later
     - need to get row separator feature working first
     - can get multline headers working first
     multiline_cells: bool | None = None,
+- be able to output to other formats (e.g. html, github markdown)
 
 """
 from __future__ import annotations
