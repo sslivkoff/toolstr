@@ -7,6 +7,50 @@ import tooltime
 from . import spec
 
 
+def hjustify(
+    text: str,
+    justification: spec.HorizontalJustification,
+    width: int,
+) -> str:
+
+    if width < len(text):
+        return text[:width]
+
+    if justification == 'left':
+        return text.ljust(width)
+    elif justification == 'right':
+        return text.rjust(width)
+    elif justification == 'center':
+        return text.center(width)
+    else:
+        raise Exception('unknown justification: ' + str(justification))
+
+
+def vjustify(
+    text: str,
+    justification: spec.VerticalJustification,
+    height: int,
+) -> str:
+
+    n_lines = text.count('\n') + 1
+
+    # check if exceeds height
+    if n_lines > height:
+        return '\n'.join(text.split('\n')[:height])
+
+    missing = height - n_lines
+    if justification == 'top':
+        return text + '\n' * missing
+    elif justification == 'bottom':
+        return '\n' * missing + text
+    elif justification == 'center':
+        top = int(missing / 2)
+        bottom = missing - top
+        return '\n' * top + text + '\n' * bottom
+    else:
+        raise Exception('unknown justification: ' + str(justification))
+
+
 def format(value, format_type=None, **kwargs) -> str:
 
     if format_type is None:
@@ -27,7 +71,7 @@ def format(value, format_type=None, **kwargs) -> str:
 
 
 def format_nbytes(
-    nbytes: int,
+    nbytes: int | float,
     decimals: int = 2,
     commas=False,
     **format_kwargs,
@@ -60,11 +104,16 @@ def format_timestamp(
     representation: tooltime.TimestampExtendedRepresentation = 'TimestampISO',
     **kwargs,
 ) -> str:
-    return tooltime.convert_timestamp(
+
+    converted: typing.Any = tooltime.convert_timestamp(
         timestamp,
-        to_representation=representation,
+        to_representation=representation,  # type: ignore
         **kwargs,
     )
+    if isinstance(converted, str):
+        return converted
+    else:
+        return str(converted)
 
 
 def format_number(
