@@ -123,6 +123,7 @@ def print_table(
         column_gap=column_gap,
         outer_gap=outer_gap,
         outer_borders=outer_borders,
+        separator_indices=separator_indices,
     )
 
     # return or print table
@@ -134,14 +135,15 @@ def print_table(
 
 def _filter_separator_indices(rows):
     filtered = []
-    indices = []
+    indices = set()
     for row in rows:
         if row is None:
             index = len(filtered) - 1
             if index < 0:
                 raise Exception('cannot start with a row separator')
-            indices.append(index)
-        filtered.append(row)
+            indices.add(index)
+        else:
+            filtered.append(row)
     return filtered, indices
 
 
@@ -413,6 +415,7 @@ def _convert_table_to_str(
     column_gap,
     outer_gap,
     outer_borders,
+    separator_indices,
 ):
 
     # use compact format
@@ -539,9 +542,10 @@ def _convert_table_to_str(
         lines.append(formatted_header)
         lines.append(row_separator)
     # lines.extend(formatted_rows)
-    for formatted_row in formatted_rows:
+    for r, formatted_row in enumerate(formatted_rows):
         lines.append(formatted_row)
-        # lines.append(row_separator)
+        if r in separator_indices:
+            lines.append(row_separator)
     if bottom_header:
         lines.append(row_separator)
         lines.append(formatted_header)
