@@ -1,3 +1,10 @@
+from __future__ import annotations
+
+import typing
+
+if typing.TYPE_CHECKING:
+    import numpy as np
+
 import toolstr
 
 from .. import spec
@@ -5,19 +12,21 @@ from . import char_dicts
 from . import grid_utils
 
 
-def array_to_tuple(array):
+def array_to_tuple(
+    array: typing.Sequence[typing.Any],
+) -> typing.Tuple[typing.Tuple[typing.Any, ...], ...]:
     return tuple(tuple(row) for row in array)
 
 
 def render_supergrid(
-    array,
-    rows_per_cell=None,
-    columns_per_cell=None,
-    char_dict=None,
-    sample_mode=None,
-    color_grid=None,
-    color_map=None,
-):
+    array: np.typing.NDArray,  # type: ignore
+    rows_per_cell: int | None = None,
+    columns_per_cell: int | None = None,
+    char_dict: spec.GridCharDict | None = None,
+    sample_mode: spec.SampleMode | None = None,
+    color_grid: np.typing.NDArray | None = None,  # type: ignore
+    color_map: typing.Mapping[int, str] | None = None,
+) -> str:
 
     if rows_per_cell is None or columns_per_cell is None or char_dict is None:
         rows_per_cell, columns_per_cell = spec.sample_mode_size[sample_mode]
@@ -34,7 +43,7 @@ def render_supergrid(
     super_rows = np.vsplit(array, super_rows)
     for sr, super_row in enumerate(super_rows):
         new_row = []
-        super_cells = np.hsplit(super_row, super_columns)
+        super_cells: np.typing.NDArray = np.hsplit(super_row, super_columns)  # type: ignore
         for sc, super_cell in enumerate(super_cells):
 
             # get char
@@ -43,23 +52,28 @@ def render_supergrid(
 
             # get color
             if color_grid is not None and char_str not in [' ', '⠀']:
-                color = color_map[color_grid[sr, sc]]
+                color = color_map[color_grid[sr, sc]]  # type: ignore
                 char_str = '[' + color + ']' + char_str + '[/' + color + ']'
 
             new_row.append(char_str)
 
-        new_row = ''.join(new_row)
-        new_rows.append(new_row)
+        new_rows.append(''.join(new_row))
 
     return '\n'.join(new_rows)
 
 
-def render_y_axis(grid, width=8, n_ticks=4, tick_length=2, label_gap=0):
+def render_y_axis(
+    grid: spec.Grid,
+    width: int = 8,
+    n_ticks: int = 4,
+    tick_length: int = 2,
+    label_gap: int = 0,
+) -> str:
 
     import numpy as np
 
     tick_indices = (
-        np.linspace(0, grid['n_rows'] - 1, n_ticks).round().astype(int)
+        np.linspace(0, grid['n_rows'] - 1, n_ticks).round().astype(int)  # type: ignore
     )
 
     label_width = width - (label_gap + tick_length)
@@ -97,16 +111,16 @@ def render_y_axis(grid, width=8, n_ticks=4, tick_length=2, label_gap=0):
 
 
 def render_x_axis(
-    grid,
-    n_ticks=3,
-    tick_length=2,
-    include_label_gap=False,
-    formatter=None,
-):
+    grid: spec.Grid,
+    n_ticks: int = 3,
+    tick_length: int = 2,
+    include_label_gap: bool = False,
+    formatter: typing.Callable[[typing.Any], str] | None = None,
+) -> str:
 
     import numpy as np
 
-    tick_indices = (
+    tick_indices: np.NDArray = (  # type: ignore
         np.linspace(0, grid['n_columns'] - 1, n_ticks).round().astype(int)
     )
 
@@ -114,7 +128,7 @@ def render_x_axis(
 
     # tick row
     if n_ticks == 0:
-        tick_row = '─' * grid['n_columns']
+        rows.append('─' * grid['n_columns'])
     elif n_ticks == 1:
         raise Exception()
     else:
@@ -127,8 +141,7 @@ def render_x_axis(
                 continue
             tick_row.append('┬')
         tick_row.append('┐')
-    tick_row = ''.join(tick_row)
-    rows.append(tick_row)
+        rows.append(''.join(tick_row))
 
     # tick length rows
     if tick_length <= 0:
@@ -136,7 +149,7 @@ def render_x_axis(
     elif tick_length == 1:
         pass
     else:
-        tick_length_row = tick_row
+        tick_length_row = rows[-1]
         tick_length_row = tick_length_row.replace('─', ' ')
         tick_length_row = tick_length_row.replace('┌', '╵')
         tick_length_row = tick_length_row.replace('┬', '╵')
@@ -173,4 +186,3 @@ def render_x_axis(
     rows.append(labels)
 
     return '\n'.join(rows)
-

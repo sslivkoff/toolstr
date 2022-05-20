@@ -21,3 +21,8 @@ performance = [
 
 [project.urls]
 Source = "https://github.com/sslivkoff/toolstr"
+
+
+[tool.mypy]
+strict = true
+files = ["toolstr"]

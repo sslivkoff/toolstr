@@ -1,10 +1,23 @@
-import math
+from __future__ import annotations
 
+import math
+import typing
+from typing_extensions import Literal, TypedDict
+
+from .. import spec
 from . import grid_utils
 from . import line_utils
 
+import numpy.typing
 
-def create_blank_raster(grid, container_format='array', cell_format=int):
+
+def create_blank_raster(
+    grid: spec.Grid,
+    container_format: Literal[
+        'array', 'list_of_rows', 'list_of_columns'
+    ] = 'array',
+    cell_format: typing.Type[int] | typing.Type[str] = int,
+) -> spec.Raster:
 
     if container_format == 'array':
         import numpy as np
@@ -18,13 +31,13 @@ def create_blank_raster(grid, container_format='array', cell_format=int):
 
     elif container_format == 'list_of_rows':
         if cell_format is int:
-            cell = 0
+            cell: int | float | str = 0
         elif cell_format is str:
             cell = ' '
         else:
             raise Exception('unknown cell format: ' + str(cell_format))
 
-        return [[[cell] * grid['n_columns']] for row in grid['n_rows']]
+        return [[[cell] * grid['n_columns']] for row in range(grid['n_rows'])]
 
     elif container_format == 'list_of_columns':
         if cell_format is int:
@@ -34,13 +47,15 @@ def create_blank_raster(grid, container_format='array', cell_format=int):
         else:
             raise Exception('unknown cell format: ' + str(cell_format))
 
-        return [[[cell] * grid['n_rows']] for row in grid['n_columns']]
+        return [[[cell] * grid['n_rows']] for row in range(grid['n_columns'])]
 
     else:
         raise Exception('unknown container_format: ' + str(container_format))
 
 
-def rasterize_by_column(yvals, grid):
+def rasterize_by_column(
+    yvals: typing.Sequence[int | float], grid: spec.Grid
+) -> spec.Raster:
     import numpy as np
 
     assert len(yvals) == grid['n_columns']
@@ -55,7 +70,10 @@ def rasterize_by_column(yvals, grid):
     return raster
 
 
-def rasterize_by_lines(yvals, grid):
+def rasterize_by_lines(
+    yvals: typing.Sequence[int | float],
+    grid: spec.Grid,
+) -> spec.Raster:
 
     assert len(yvals) == grid['n_columns']
 
@@ -70,10 +88,8 @@ def rasterize_by_lines(yvals, grid):
             row_next,
             column + 1,
         )
-        mask = (rows >= 0) * (columns >= 0)
-        rows = rows[mask]
-        columns = columns[mask]
-        raster[rows, columns] = 1
+        mask = (rows >= 0) * (columns >= 0)  # type: ignore
+        raster[rows[mask], columns[mask]] = 1
 
     return raster
 
@@ -84,7 +100,12 @@ candlestick_color_map = {
 }
 
 
-def add_column_line(column, from_row, to_row, raster):
+def add_column_line(
+    column: int,
+    from_row: int,
+    to_row: int,
+    raster: spec.Raster,
+) -> None:
     min_row = min(from_row, to_row)
     max_row = max(from_row, to_row)
 
@@ -101,7 +122,18 @@ def add_column_line(column, from_row, to_row, raster):
     raster[min_row : (max_row + 1), column] = 1
 
 
-def raster_candlesticks(ohlc, sample_grid, render_grid, justify='left'):
+class CandlestickRenderResult(TypedDict):
+    raster: spec.Raster
+    color_grid: spec.Raster
+
+
+def raster_candlesticks(
+    ohlc: typing.Sequence[typing.Sequence[int | float]],
+    sample_grid: spec.Grid,
+    render_grid: spec.Grid,
+    justify: spec.HorizontalJustification = 'left',
+) -> CandlestickRenderResult:
+
     raster = create_blank_raster(sample_grid)
     color_grid = create_blank_raster(render_grid)
     n_render_lines = min(len(ohlc), math.floor(render_grid['n_columns'] / 2))
@@ -154,7 +186,14 @@ def raster_candlesticks(ohlc, sample_grid, render_grid, justify='left'):
     }
 
 
-def raster_bar_chart(values, grid, bar_width, bar_gap, start_gap=0):
+def raster_bar_chart(
+    values: typing.Sequence[int | float],
+    grid: spec.Grid,
+    bar_width: int,
+    bar_gap: int,
+    start_gap: int = 0,
+) -> spec.Raster:
+
     raster = create_blank_raster(grid)
 
     for v, value in enumerate(values):

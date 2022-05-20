@@ -1,11 +1,25 @@
 from __future__ import annotations
 
 import typing
+from typing_extensions import TypedDict
 
 from . import spec
 
 
-def get_border_chars_by_name(name: str) -> spec.BorderCharSet:
+class BorderCharsKwargs(TypedDict, total=False):
+    thick: typing.Optional[bool]
+    double: typing.Optional[bool]
+    dashes: typing.Optional[int]
+    ascii: typing.Optional[bool]
+    double_horizontal: typing.Optional[bool]
+    double_vertical: typing.Optional[bool]
+    thick_horizontal: typing.Optional[bool]
+    thick_vertical: typing.Optional[bool]
+    rounded: typing.Optional[bool]
+    style: str | None
+
+
+def get_border_chars_by_name(name: str) -> spec.BorderChars:
 
     category_keys = {
         'thick',
@@ -20,10 +34,10 @@ def get_border_chars_by_name(name: str) -> spec.BorderCharSet:
     }
 
     styles = []
-    kwargs = {}
+    kwargs: BorderCharsKwargs = {}
     for key in name.split(' '):
         if key in category_keys:
-            kwargs[key] = True
+            kwargs[key] = True  # type: ignore
         else:
             styles.append(key)
 
@@ -44,7 +58,7 @@ def get_border_chars(
     thick_vertical: typing.Optional[bool] = None,
     rounded: typing.Optional[bool] = None,
     style: str | None = None,
-) -> spec.BorderCharSet:
+) -> spec.BorderChars:
     """
     TODO: rounded corners
     """
@@ -75,7 +89,7 @@ def get_border_chars(
     )
 
     if ascii:
-        border_style = {
+        border_style: spec.BorderChars = {
             'horizontal': '-',
             'vertical': '|',
             'upper_left': '-',
@@ -280,8 +294,14 @@ def get_border_chars(
         border_style['lower_right'] = '╯'
 
     if style:
-        border_style = {
-            key: '[' + style + ']' + value + '[/' + style + ']'
+        border_style = {  # type: ignore
+            key: '['
+            + style
+            + ']'
+            + typing.cast(str, value)
+            + '[/'
+            + style
+            + ']'
             for key, value in border_style.items()
         }
 
@@ -301,7 +321,7 @@ def get_outlined_text(
     lower_pad: typing.Optional[int] = None,
     left_pad: typing.Optional[int] = None,
     right_pad: typing.Optional[int] = None,
-    **border_style,
+    **border_style: typing.Any,
 ) -> str:
 
     # set defaults
@@ -425,7 +445,7 @@ def print_outlined_text(
     lower_pad: typing.Optional[int] = None,
     left_pad: typing.Optional[int] = None,
     right_pad: typing.Optional[int] = None,
-    **border_style,
+    **border_style: typing.Any,
 ) -> None:
     string = get_outlined_text(
         text=text,
@@ -453,7 +473,7 @@ def print_text_box(
     lower_pad: int = 0,
     left_pad: int = 1,
     right_pad: int = 1,
-    **border_style,
+    **border_style: typing.Any,
 ) -> None:
     print_outlined_text(
         text,
@@ -476,7 +496,7 @@ def print_header(
     width: typing.Optional[int] = None,
     justify: typing.Optional[spec.HorizontalJustification] = None,
     pad: int = 0,
-    **border_style,
+    **border_style: typing.Any,
 ) -> None:
     print_outlined_text(
         text,

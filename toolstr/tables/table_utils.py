@@ -1,14 +1,11 @@
 """
 
 TODO
+- strict type annotations
 - multiline headers
 - header border style when header_location is on bottom
 
 Saving until later
-- multiline cells
-    - need to get row separator feature working first
-    - can get multline headers working first
-    multiline_cells: bool | None = None,
 - be able to output to other formats (e.g. html, github markdown)
 
 """
@@ -46,8 +43,9 @@ if typing.TYPE_CHECKING:
 def print_table(
     #
     # content
-    rows: typing.Sequence[typing.Any],
+    rows: typing.Sequence[None | typing.Sequence[typing.Any]],
     headers: typing.Sequence[str] | None = None,
+    *,
     add_row_index: bool = False,
     row_start_index: int = 1,
     missing_columns: typing.Literal['clip', 'fill', 'error'] = 'error',
@@ -72,9 +70,9 @@ def print_table(
     separate_all_rows: bool = False,
     compact: bool = False,
     outer_borders: bool | None = None,
-    border_style: str | spec.BorderCharSet | None = None,
-    header_border_style: str | spec.BorderCharSet | None = None,
-    outer_border_style: str | spec.BorderCharSet | None = None,
+    border_style: str | spec.BorderChars | None = None,
+    header_border_style: str | spec.BorderChars | None = None,
+    outer_border_style: str | spec.BorderChars | None = None,
     #
     # cell
     justify: spec.HorizontalJustification = 'right',
@@ -135,11 +133,15 @@ def print_table(
         return table_as_str
     else:
         _print_table(table_as_str, use_rich, use_styles, console, file)
+        return None
 
 
-def _filter_separator_indices(rows, separate_all_rows):
+def _filter_separator_indices(
+    rows: typing.Sequence[None | typing.Sequence[typing.Any]],
+    separate_all_rows: bool,
+) -> tuple[list[typing.Sequence[typing.Any]], set[int]]:
 
-    filtered = []
+    filtered: list[typing.Sequence[typing.Any]] = []
     indices = set()
     for row in rows:
         if row is None:
@@ -156,8 +158,13 @@ def _filter_separator_indices(rows, separate_all_rows):
     return filtered, indices
 
 
-def _fix_missing_data(rows, headers, missing_columns, empty_str):
-    min_columns = float('inf')
+def _fix_missing_data(
+    rows: list[typing.Sequence[typing.Any]],
+    headers: typing.Sequence[str] | None,
+    missing_columns: typing.Literal['clip', 'fill', 'error'],
+    empty_str: str,
+) -> tuple[list[typing.Sequence[typing.Any]], typing.Sequence[str] | None,]:
+    min_columns = 1_000_000_000
     max_columns = 0
     for row in rows:
         n_row_columns = len(row)
@@ -177,14 +184,20 @@ def _fix_missing_data(rows, headers, missing_columns, empty_str):
                 headers = headers[:min_columns]
         elif missing_columns == 'fill':
             rows = [
-                row + [empty_str] * (max_columns - len(row)) for row in rows
+                list(row) + [empty_str] * (max_columns - len(row))
+                for row in rows
             ]
             if headers is not None:
-                headers = headers + [''] * (max_columns - len(headers))
+                headers = list(headers) + [''] * (max_columns - len(headers))
     return rows, headers
 
 
-def _add_index(rows, headers, add_row_index, row_start_index):
+def _add_index(
+    rows: list[typing.Sequence[typing.Any]],
+    headers: typing.Sequence[str] | None,
+    add_row_index: bool,
+    row_start_index: int,
+) -> tuple[list[typing.Sequence[typing.Any]], typing.Sequence[str] | None]:
     if add_row_index:
         if headers is not None:
             if isinstance(add_row_index, str):
@@ -192,27 +205,31 @@ def _add_index(rows, headers, add_row_index, row_start_index):
             else:
                 index_name = ''
             headers = [index_name] + list(headers)
-        rows = [[str(row_start_index + r)] + row for r, row in enumerate(rows)]
+        rows = [
+            [str(row_start_index + r)] + list(row) for r, row in enumerate(rows)
+        ]
 
     return rows, headers
 
 
 def _stringify_all(
-    rows,
-    headers,
-    column_widths,
-    format,
-    column_format,
-    empty_str,
-    justify,
-    column_justify,
-    header_justify,
-    style,
-    column_style,
-    header_style,
-    use_styles,
-    add_row_index,
-):
+    rows: typing.Sequence[typing.Sequence[typing.Any]],
+    headers: typing.Sequence[str] | None,
+    column_widths: typing.Sequence[int] | None,
+    empty_str: str,
+    format: FormatKwargs | None,
+    column_format: ColumnData[FormatKwargs] | None,
+    use_styles: bool,
+    add_row_index: bool,
+    justify: spec.HorizontalJustification,
+    column_justify: ColumnData[spec.HorizontalJustification] | None,
+    header_justify: spec.HorizontalJustification
+    | ColumnData[spec.HorizontalJustification]
+    | None,
+    style: Style | None,
+    column_style: ColumnData[Style] | None,
+    header_style: ColumnData[Style] | None,
+) -> tuple[list[list[str]], list[str] | None, typing.Sequence[int]]:
 
     # convert cells to str
     column_format = _convert_column_dict_to_list(column_format, headers)
@@ -234,14 +251,16 @@ def _stringify_all(
         _trim_justify_cells(str_row, column_widths, column_justify, justify)
         for str_row in str_cells
     ]
-    if headers is not None:
+    if str_headers is not None:
         if header_justify is None:
             header_justify = 'right'
         if isinstance(header_justify, list) and add_row_index:
             header_justify = [header_justify[0]] + header_justify
         if isinstance(header_justify, str):
-            header_justify = [header_justify] * len(headers)
-        if header_justify is not None and len(header_justify) != len(headers):
+            header_justify = [header_justify] * len(headers)  # type: ignore
+        if header_justify is not None and len(header_justify) != len(
+            str_headers
+        ):
             raise Exception('header_justify has wrong length')
         str_headers = _trim_justify_cells(
             str_headers, column_widths, header_justify, justify
@@ -253,22 +272,27 @@ def _stringify_all(
         str_cells = [
             _stylize_row(str_row, style, column_style) for str_row in str_cells
         ]
-        if headers is not None:
+        if str_headers is not None:
             if isinstance(header_style, list) and add_row_index:
                 header_style = [header_style[0]] + header_style
             if isinstance(header_style, str):
-                header_style = [header_style] * len(headers)
-            if header_style is not None and len(header_style) != len(headers):
+                header_style = [header_style] * len(str_headers)
+            if header_style is not None and len(header_style) != len(
+                str_headers
+            ):
                 raise Exception('header_style has wrong length')
             str_headers = _stylize_row(str_headers, style, header_style)
 
     return str_cells, str_headers, column_widths
 
 
-def _get_column_widths(str_cells, str_headers):
+def _get_column_widths(
+    str_cells: list[list[str]],
+    str_headers: list[str] | None,
+) -> list[int]:
     if len(str_cells) > 0:
         n_columns = len(str_cells[0])
-    elif len(str_headers) > 0:
+    elif str_headers is not None and len(str_headers) > 0:
         n_columns = len(str_headers)
     else:
         return []
@@ -288,10 +312,26 @@ def _get_column_widths(str_cells, str_headers):
     return max_column_widths
 
 
+@typing.overload
+def _convert_column_dict_to_list(
+    column_data: None,
+    headers: typing.Sequence[str] | None,
+) -> None:
+    ...
+
+
+@typing.overload
 def _convert_column_dict_to_list(
     column_data: ColumnData[T],
-    headers: typing.Sequence[str] | None = None,
+    headers: typing.Sequence[str] | None,
 ) -> typing.Sequence[T | None]:
+    ...
+
+
+def _convert_column_dict_to_list(
+    column_data: ColumnData[T] | None,
+    headers: typing.Sequence[str] | None,
+) -> None | typing.Sequence[T | None]:
     """convert a dict of column data to a list of column data"""
 
     if column_data is None or isinstance(column_data, list):
@@ -313,7 +353,12 @@ def _convert_column_dict_to_list(
         raise Exception('unknown format: ' + str(column_data))
 
 
-def _stringify_cells(row, format, column_format, empty_str):
+def _stringify_cells(
+    row: typing.Sequence[typing.Any],
+    format: FormatKwargs | None,
+    column_format: ColumnData[FormatKwargs] | None,
+    empty_str: str,
+) -> list[str]:
     row_str_cells = []
     for c, cell in enumerate(row):
 
@@ -356,7 +401,7 @@ def _stringify_cells(row, format, column_format, empty_str):
 def _trim_justify_cells(
     str_row: typing.Sequence[str],
     column_widths: typing.Sequence[int],
-    column_justify: typing.Sequence[spec.HorizontalJustification | None] | None,
+    column_justify: ColumnData[spec.HorizontalJustification] | None,
     justify: spec.HorizontalJustification,
 ) -> list[str]:
     """trim or justify cells in row to target sizes"""
@@ -385,11 +430,15 @@ def _trim_justify_cells(
     return output
 
 
-def _stylize_row(row, style, column_style):
+def _stylize_row(
+    row: list[str],
+    style: Style | None,
+    column_style: ColumnData[Style] | None,
+) -> list[str]:
     stylized_row = []
     for c, cell in enumerate(row):
         if column_style is not None and column_style[c] is not None:
-            cell_style: typing.Callable | str | None = column_style[c]
+            cell_style: Style | None = column_style[c]
         elif style is not None:
             cell_style = style
         else:
@@ -405,7 +454,7 @@ def _stylize_row(row, style, column_style):
 
 
 def _process_header_location(
-    header_location: str | tuple | list | None,
+    header_location: HeaderLocation | None,
 ) -> tuple[bool, bool]:
 
     if isinstance(header_location, str):
@@ -424,21 +473,21 @@ def _process_header_location(
 
 
 def _convert_table_to_str(
-    str_cells,
-    str_headers,
-    column_widths,
-    compact,
-    indent,
-    max_table_width,
-    header_location,
-    border_style,
-    header_border_style,
-    outer_border_style,
-    column_gap,
-    outer_gap,
-    outer_borders,
-    separator_indices,
-):
+    str_cells: list[list[str]],
+    str_headers: list[str] | None,
+    column_widths: typing.Sequence[int],
+    compact: bool,
+    indent: str | int | None,
+    max_table_width: int | None,
+    header_location: HeaderLocation | None,
+    border_style: str | spec.BorderChars | None,
+    header_border_style: str | spec.BorderChars | None,
+    outer_border_style: str | spec.BorderChars | None,
+    column_gap: int | str | None,
+    outer_gap: int | str | None,
+    outer_borders: bool | None,
+    separator_indices: set[int],
+) -> str:
 
     # use compact format
     if compact:
@@ -650,7 +699,13 @@ def _convert_table_to_str(
     return table_as_str
 
 
-def _print_table(table_as_str, use_rich, use_styles, console, file):
+def _print_table(
+    table_as_str: str,
+    use_rich: bool | None,
+    use_styles: bool,
+    console: rich.console.Console | None,
+    file: typing.TextIO | None,
+) -> None:
     if use_rich is None:
         if console is not None:
             use_rich = True

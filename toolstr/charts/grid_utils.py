@@ -7,7 +7,7 @@ from toolstr import spec
 if typing.TYPE_CHECKING:
     import numpy
 
-    NumpyArray = numpy.typing.NDArray
+    NumpyArray = numpy.typing.NDArray  # type: ignore
 
 
 def create_grid(
@@ -48,23 +48,23 @@ def get_column_borders(grid: spec.Grid) -> NumpyArray:
 
 def get_row_centers(grid: spec.Grid) -> NumpyArray:
     row_borders = get_row_borders(grid)
-    return (row_borders[1:] + row_borders[:-1]) / 2
+    return (row_borders[1:] + row_borders[:-1]) / 2  # type: ignore
 
 
 def get_column_centers(grid: spec.Grid) -> NumpyArray:
     column_borders = get_column_borders(grid)
-    return (column_borders[1:] + column_borders[:-1]) / 2
+    return (column_borders[1:] + column_borders[:-1]) / 2  # type: ignore
 
 
 def get_row_delta(grid: spec.Grid) -> typing.Union[int, float]:
     return (grid['ymax'] - grid['ymin']) / grid['n_rows']
 
 
-def get_column_delta(grid: spec.Grid):
+def get_column_delta(grid: spec.Grid) -> float:
     return (grid['xmax'] - grid['xmin']) / grid['n_columns']
 
 
-def get_cell_borders(row: int, column: int, grid: spec.Grid):
+def get_cell_borders(row: int, column: int, grid: spec.Grid) -> tuple[float, float, float, float]:
     row_delta = get_row_delta(grid)
     column_delta = get_column_delta(grid)
     return (
@@ -75,12 +75,12 @@ def get_cell_borders(row: int, column: int, grid: spec.Grid):
     )
 
 
-def get_row_center(row: int, grid: spec.Grid):
+def get_row_center(row: int, grid: spec.Grid) -> float:
     row_delta = get_row_delta(grid)
     return grid['ymin'] + row_delta / 2.0 + row_delta * row
 
 
-def get_column_center(column: int, grid: spec.Grid):
+def get_column_center(column: int, grid: spec.Grid) -> float:
     column_delta = get_column_delta(grid)
     return grid['xmin'] + column_delta / 2.0 + column_delta * column
 

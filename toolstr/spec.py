@@ -3,12 +3,15 @@ from __future__ import annotations
 import typing
 from typing_extensions import Literal, TypedDict
 
+if typing.TYPE_CHECKING:
+    import numpy.typing
+
 
 HorizontalJustification = Literal['left', 'right', 'center']
 VerticalJustification = Literal['top', 'bottom', 'center']
 
 
-class BorderCharSet(TypedDict):
+class BorderChars(TypedDict):
     horizontal: str
     vertical: str
     upper_left: str
@@ -16,8 +19,8 @@ class BorderCharSet(TypedDict):
     lower_left: str
     lower_right: str
     cross: str
-    lower_t: str
     upper_t: str
+    lower_t: str
     left_t: str
     right_t: str
 
@@ -39,6 +42,8 @@ sample_mode_size = {
     'braille': (4, 2),
 }
 
+GridCharDict = dict[tuple[tuple[int, ...], ...], str]
+
 
 class Grid(TypedDict):
     n_rows: int
@@ -47,6 +52,14 @@ class Grid(TypedDict):
     xmax: typing.Union[int, float]
     ymin: typing.Union[int, float]
     ymax: typing.Union[int, float]
+
+
+# Raster = typing.Union[
+#     list[list[list[int | str]]],
+#     numpy.typing.ndarray[typing.Any, numpy.dtype],
+# ]
+# Raster = numpy.typing.ndarray[typing.Any, numpy.dtype],
+Raster = typing.Any
 
 
 Numeric = typing.Union[int, float]

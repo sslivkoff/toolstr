@@ -51,7 +51,11 @@ def vjustify(
         raise Exception('unknown justification: ' + str(justification))
 
 
-def format(value, format_type=None, **kwargs) -> str:
+def format(
+    value: typing.Any,
+    format_type: typing.Literal['number', 'timestamp'] | None = None,
+    **kwargs: typing.Any,
+) -> str:
 
     if format_type is None:
 
@@ -73,8 +77,8 @@ def format(value, format_type=None, **kwargs) -> str:
 def format_nbytes(
     nbytes: int | float,
     decimals: int = 2,
-    commas=False,
-    **format_kwargs,
+    commas: bool = False,
+    **format_kwargs: typing.Any,
 ) -> str:
     if not isinstance(nbytes, int):
         raise Exception('input must be integer')
@@ -102,7 +106,7 @@ def format_nbytes(
 def format_timestamp(
     timestamp: tooltime.Timestamp,
     representation: tooltime.TimestampExtendedRepresentation = 'TimestampISO',
-    **kwargs,
+    **kwargs: typing.Any,
 ) -> str:
 
     converted: typing.Any = tooltime.convert_timestamp(
@@ -216,7 +220,7 @@ def format_change(
     from_value: typing.Optional[spec.Numeric] = None,
     to_value: typing.Optional[spec.Numeric] = None,
     series: typing.Optional[typing.Sequence[spec.Numeric]] = None,
-    **format_kwargs,
+    **format_kwargs: typing.Any,
 ) -> str:
     if from_value is None or to_value is None:
         if series is None:

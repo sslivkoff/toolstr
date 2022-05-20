@@ -7,15 +7,15 @@ from . import table_utils
 
 
 def print_multiline_table(
-    rows,
-    headers,
+    rows: list[typing.Sequence[typing.Any]],
+    headers: typing.Sequence[str] | None = None,
     row_height: int | None = None,
     row_heights: typing.Sequence[int] | None = None,
     add_row_index: bool = False,
     row_start_index: int = 1,
-    vertical_justify: str
+    vertical_justify: spec.VerticalJustification
     | table_utils.ColumnData[spec.VerticalJustification] = 'center',
-    **table_kwargs
+    **table_kwargs: typing.Any
 ) -> str | None:
 
     # add row index
@@ -44,7 +44,7 @@ def print_multiline_table(
             n_columns = len(rows[0])
         else:
             n_columns = 0
-        vertical_justify = [vertical_justify] * len(headers)
+        vertical_justify = [vertical_justify] * n_columns
     else:
         vertical_justify = table_utils._convert_column_dict_to_list(
             vertical_justify,
@@ -52,10 +52,12 @@ def print_multiline_table(
         )
 
     # create row group for each row
-    new_rows = []
+    new_rows: typing.List[None | typing.Sequence[typing.Any]] = []
     for row, height in zip(rows, row_heights):
 
-        row_group = [[] for r in range(height)]
+        row_group: typing.Sequence[list[typing.Any]] = [
+            [] for r in range(height)
+        ]
         for c, cell in enumerate(row):
 
             # split cell into individual lines
@@ -73,14 +75,16 @@ def print_multiline_table(
             # insert empty lines based on justification
             column_justify = vertical_justify[c]
             if column_justify == 'top':
-                full_lines = cell_lines + [None] * extra_height
+                full_lines: typing.Sequence[typing.Any] = (
+                    cell_lines + [None] * extra_height  # type: ignore
+                )
             elif column_justify == 'bottom':
-                full_lines = [None] * extra_height + cell_lines
+                full_lines = [None] * extra_height + cell_lines  # type: ignore
             elif column_justify == 'center':
                 extra_top = int(extra_height / 2)
                 extra_bottom = extra_height - extra_top
                 full_lines = (
-                    [None] * extra_top + cell_lines + [None] * extra_bottom
+                    [None] * extra_top + cell_lines + [None] * extra_bottom  # type: ignore
                 )
             else:
                 raise Exception('unknown justification')

@@ -1,9 +1,14 @@
-# braille characters have different width than most characters
+"""braille characters have different width than most characters"""
+
+from __future__ import annotations
+
+import typing
+
 from . import raster_utils
 from . import render_utils
 
 
-braille_dict = {
+braille_dict: dict[tuple[tuple[int, ...], ...], str] = {
     ((0, 0), (0, 0), (0, 0), (0, 0)): '⠀',
     ((1, 0), (0, 0), (0, 0), (0, 0)): '⠁',
     ((1, 0), (1, 0), (0, 0), (0, 0)): '⠃',
@@ -263,12 +268,16 @@ braille_dict = {
 }
 
 
-def create_braille_sparkline(data, width):
+def create_braille_sparkline(
+    data: typing.Sequence[int | float],
+    width: int,
+) -> str:
     import numpy as np
 
     indices = np.linspace(0, len(data) - 1, 2 * width, dtype=int)
-    samples = [data[index] for index in indices]
-    samples = np.array(samples)
+    samples: np.ndarray[typing.Any, np.dtype[np.int64]] = np.array(
+        [data[index] for index in indices]
+    )
 
     ymin = samples.min()
     ymax = samples.max()
@@ -282,7 +291,7 @@ def create_braille_sparkline(data, width):
         'ymin': ymin - 0.1 * dy,
         'ymax': ymax + 0.1 * dy,
     }
-    raster = raster_utils.rasterize_by_lines(yvals=samples, grid=grid)
+    raster = raster_utils.rasterize_by_lines(yvals=samples, grid=grid)  # type: ignore
 
     return render_utils.render_supergrid(
         raster,
@@ -290,4 +299,3 @@ def create_braille_sparkline(data, width):
         columns_per_cell=2,
         char_dict=braille_dict,
     )
-

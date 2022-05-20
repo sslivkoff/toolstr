@@ -1,4 +1,9 @@
-def concatenate_blocks(blocks):
+from __future__ import annotations
+
+import typing
+
+
+def concatenate_blocks(blocks: typing.Sequence[str]) -> str:
     """concatenate blocks of text horizontally"""
 
     # split blocks into lines
@@ -16,4 +21,3 @@ def concatenate_blocks(blocks):
         new_lines.append(''.join(pieces))
 
     return '\n'.join(new_lines)
-
