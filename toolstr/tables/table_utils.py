@@ -1,9 +1,3 @@
-"""
-TODO
-- multiline headers
-- header border style when header_location is on bottom
-- move table types to spec
-"""
 from __future__ import annotations
 
 import typing
@@ -316,14 +310,9 @@ def _stringify_all(
     return str_cells, str_headers, column_widths
 
 
-def _get_column_widths(
-    str_cells: list[list[str]],
-    # str_headers: list[str] | None,
-) -> list[int]:
+def _get_column_widths(str_cells: list[list[str]]) -> list[int]:
     if len(str_cells) > 0:
         n_columns = len(str_cells[0])
-    # elif str_headers is not None and len(str_headers) > 0:
-    #     n_columns = len(str_headers)
     else:
         return []
     max_column_widths: list[int] = [0] * n_columns
@@ -332,12 +321,6 @@ def _get_column_widths(
             cell_width = len(str_cell)
             if cell_width > max_column_widths[c]:
                 max_column_widths[c] = cell_width
-    # if str_headers is not None:
-    #     while len(str_headers) > len(max_column_widths):
-    #         max_column_widths.append(0)
-    #     for c, header in enumerate(str_headers):
-    #         if len(header) > max_column_widths[c]:
-    #             max_column_widths[c] = len(header)
 
     return max_column_widths
 
@@ -589,11 +572,6 @@ def _convert_table_to_str(
             formatted_row = outer_vertical + formatted_row + outer_vertical
         formatted_row = indent + formatted_row
 
-        # trim
-        if max_table_width is not None:
-            if len(formatted_row) > max_table_width:
-                formatted_row = formatted_row[:max_table_width]
-
         formatted_rows.append(formatted_row)
 
     # build row separator
@@ -643,6 +621,7 @@ def _convert_table_to_str(
                     outer_vertical + formatted_header + outer_vertical
                 )
             formatted_header = indent + formatted_header
+
             formatted_headers.append(formatted_header)
 
         separator_delimiter = (
@@ -668,7 +647,8 @@ def _convert_table_to_str(
             header_row_separator = (
                 outer_left_t + header_row_separator + outer_right_t
             )
-        row_separator = indent + row_separator
+
+    row_separator = indent + row_separator
 
     # determine header positions
     top_header = False
@@ -726,7 +706,6 @@ def _convert_table_to_str(
         for formatted_header in formatted_headers:
             lines.append(formatted_header)
         lines.append(header_row_separator)
-    # lines.extend(formatted_rows)
     for r, formatted_row in enumerate(formatted_rows):
         lines.append(formatted_row)
         if r in separator_indices:
@@ -737,6 +716,20 @@ def _convert_table_to_str(
             lines.append(formatted_header)
     if outer_borders:
         lines = [top_border] + lines + [bottom_border]
+
+    # trim table width
+    if max_table_width is not None:
+        ellipses = True
+        trimmed_lines = []
+        for line in lines:
+            if len(line) > max_table_width:
+                if ellipses:
+                    line = line[:max_table_width - 3] + '...'
+                else:
+                    line = line[:max_table_width]
+            trimmed_lines.append(line)
+        lines = trimmed_lines
+
     table_as_str = '\n'.join(lines)
 
     return table_as_str
@@ -761,7 +754,8 @@ def _print_table(
             console = rich.console.Console(
                 file=file,
                 theme=rich.theme.Theme(inherit=False),
+                width=10000,
             )
-        console.print(table_as_str, overflow='ignore')
+        console.print(table_as_str)
     else:
         print(table_as_str)
