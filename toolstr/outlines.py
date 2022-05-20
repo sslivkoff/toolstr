@@ -5,6 +5,34 @@ import typing
 from . import spec
 
 
+def get_border_chars_by_name(name: str) -> spec.BorderCharSet:
+
+    category_keys = {
+        'thick',
+        'double',
+        'dashes',
+        'ascii',
+        'double_horizontal',
+        'double_vertical',
+        'thick_horizontal',
+        'thick_vertical',
+        'rounded',
+    }
+
+    styles = []
+    kwargs = {}
+    for key in name.split(' '):
+        if key in category_keys:
+            kwargs[key] = True
+        else:
+            styles.append(key)
+
+    if len(styles) > 0:
+        kwargs['style'] = ' '.join(styles)
+
+    return get_border_chars(**kwargs)
+
+
 def get_border_chars(
     thick: typing.Optional[bool] = None,
     double: typing.Optional[bool] = None,
