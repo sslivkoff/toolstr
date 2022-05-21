@@ -18,6 +18,13 @@ dependencies = [
 performance = [
     "scikit-image>=0.19.2",
 ]
+styling = [
+    "rich>=12.1.0",
+]
+full = [
+    "scikit-image>=0.19.2",
+    "rich>=12.1.0",
+]
 
 [project.urls]
 Source = "https://github.com/sslivkoff/toolstr"

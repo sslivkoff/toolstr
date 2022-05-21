@@ -48,7 +48,7 @@ def print_table(
     # io
     file: typing.TextIO | None = None,
     console: rich.console.Console | None = None,
-    use_styles: bool = True,
+    use_styles: bool | None = None,
     use_rich: bool | None = None,
     #
     # table
@@ -74,6 +74,9 @@ def print_table(
     column_style: ColumnData[Style] | None = None,
     header_style: ColumnData[Style] | None = None,
 ) -> str | None:
+
+    # determine whether to use styles
+    use_styles = _should_use_styles(use_styles, use_rich)
 
     # filter row separators
     rows, separator_indices = _filter_separator_indices(rows, separate_all_rows)
@@ -126,6 +129,22 @@ def print_table(
     else:
         _print_table(table_as_str, use_rich, use_styles, console, file)
         return None
+
+
+def _should_use_styles(use_styles: bool, use_rich: bool) -> bool:
+    if use_styles:
+        try:
+            import rich
+        except ImportError:
+            raise Exception('rich required for styles, e.g. `pip install rich`')
+    if use_styles is None:
+        try:
+            import rich
+
+            use_styles = True
+        except ImportError:
+            use_styles = False
+    return use_styles
 
 
 def _filter_separator_indices(
