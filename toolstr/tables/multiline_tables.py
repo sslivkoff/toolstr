@@ -17,6 +17,11 @@ def print_multiline_table(
     | table_utils.ColumnData[spec.VerticalJustification] = 'center',
     **table_kwargs: typing.Any
 ) -> str | None:
+    """
+    ways to specify a multiline cell:
+    - a str containing multiple '\n's (each str line becomes a line in cell)
+    - a list (each list item becomes a line in cell)
+    """
 
     # add row index
     rows, headers = table_utils._add_index(
@@ -87,6 +92,9 @@ def _get_row_height(row: typing.Sequence[str]) -> int:
         if isinstance(cell, str):
             cell_height = cell.count('\n') + 1
             height = max(height, cell_height)
+        elif isinstance(cell, list):
+            cell_height = len(cell)
+            height = max(height, cell_height)
     return height
 
 
@@ -115,6 +123,8 @@ def _split_multiline_row(
         # split cell into individual lines
         if isinstance(cell, str):
             cell_lines = cell.split('\n')
+        elif isinstance(cell, list):
+            cell_lines = cell
         else:
             cell_lines = [cell]
         cell_height = len(cell_lines)
