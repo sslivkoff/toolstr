@@ -33,23 +33,31 @@ def print_multiline_table(
                 height = _get_row_height(row)
                 row_heights.append(height)
 
-    # proces vertical justification
+    # process vertical justification
+    n_header_columns = None
+    n_row_columns = None
     if headers is not None:
-        n_columns = len(headers)
-    elif len(rows) > 0:
-        n_columns = len(rows[0])
+        n_header_columns = len(headers)
+    if len(rows) > 0:
+        n_rows_columns = [len(row) for row in rows]
+        n_row_columns = n_rows_columns[0]
+        if not all(n == n_row_columns for n in n_rows_columns):
+            raise Exception('unequal number of columns in rows')
+    if n_header_columns is not None and n_row_columns is not None:
+        if n_header_columns != n_row_columns:
+            raise Exception('rows and headers have different number of columns')
+        n_columns = n_header_columns
+    elif n_header_columns is not None:
+        n_columns = n_header_columns
+    elif n_row_columns is not None:
+        n_columns = n_row_columns
     else:
         n_columns = 0
-    if isinstance(vertical_justify, str):
-        vertical_justify = [
-            typing.cast(spec.VerticalJustification, vertical_justify)
-        ] * n_columns
-    else:
-        vertical_justify = table_utils._convert_column_dict_to_list(
-            vertical_justify,
-            n_columns,
-            headers,
-        )
+    vertical_justify = table_utils._convert_column_dict_to_list(
+        vertical_justify,
+        n_columns,
+        headers,
+    )
 
     # create row group for each row
     new_rows: typing.List[None | typing.Sequence[typing.Any]] = []

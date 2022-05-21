@@ -222,7 +222,7 @@ def _stringify_all(
     style: Style | None,
     column_style: ColumnData[Style] | None,
     header_style: ColumnData[Style] | None,
-) -> tuple[list[list[str]], list[list[str]] | None, typing.Sequence[int]]:
+) -> tuple[list[list[str]], list[list[str]], typing.Sequence[int]]:
 
     # determine number of columns
     if len(rows) > 0:
@@ -230,7 +230,7 @@ def _stringify_all(
     elif headers is not None:
         n_columns = len(headers)
     else:
-        return [], None, []
+        return [], [], []
 
     # convert cells to str
     column_format = _convert_column_dict_to_list(
@@ -249,14 +249,11 @@ def _stringify_all(
             for header_line in header_lines
         ]
     else:
-        str_headers = None
+        str_headers = []
 
     # determine column widths
     if column_widths is None:
-        if str_headers is not None:
-            column_widths = _get_column_widths(str_cells + str_headers)
-        else:
-            column_widths = _get_column_widths(str_cells)
+        column_widths = _get_column_widths(str_cells + str_headers)
 
     # trim and justify cells to column widths
     column_justify = _convert_column_dict_to_list(
@@ -266,40 +263,42 @@ def _stringify_all(
         _trim_justify(str_row, column_widths, column_justify, justify)
         for str_row in str_cells
     ]
-    if str_headers is not None:
-        if header_justify is None:
-            header_justify = 'right'
-        if isinstance(header_justify, list) and add_row_index:
-            header_justify = [header_justify[0]] + header_justify
-        header_justify = _convert_column_dict_to_list(
-            header_justify, n_columns, headers
-        )
-        str_headers = [
-            _trim_justify(str_header, column_widths, header_justify, justify)
-            for str_header in str_headers
-        ]
+    if header_justify is None:
+        header_justify = 'right'
+    if isinstance(header_justify, list) and add_row_index:
+        header_justify = [header_justify[0]] + header_justify
+    header_justify = _convert_column_dict_to_list(
+        header_justify, n_columns, headers
+    )
+    str_headers = [
+        _trim_justify(str_header, column_widths, header_justify, justify)
+        for str_header in str_headers
+    ]
 
-    # add styles to hows and header
+    # add styles to rows and header
     if use_styles:
+
+        # style rows
         column_style = _convert_column_dict_to_list(
             column_style, n_columns, headers
         )
         str_cells = [
             _stylize_row(str_row, style, column_style) for str_row in str_cells
         ]
-        if str_headers is not None:
-            if isinstance(header_style, list) and add_row_index:
-                header_style = [header_style[0]] + header_style
-            if isinstance(header_style, str):
-                header_style = [header_style] * len(str_headers[0])
-            if header_style is not None and len(header_style) != len(
-                str_headers[0]
-            ):
-                raise Exception('header_style has wrong length')
-            str_headers = [
-                _stylize_row(str_header, style, header_style)
-                for str_header in str_headers
-            ]
+
+        # stylize header
+        if isinstance(header_style, list) and add_row_index:
+            header_style = [header_style[0]] + header_style
+        if isinstance(header_style, str):
+            header_style = [header_style] * len(str_headers[0])
+        if header_style is not None and len(header_style) != len(
+            str_headers[0]
+        ):
+            raise Exception('header_style has wrong length')
+        str_headers = [
+            _stylize_row(str_header, style, header_style)
+            for str_header in str_headers
+        ]
 
     return str_cells, str_headers, column_widths
 
@@ -344,7 +343,15 @@ def _convert_column_dict_to_list(
 ) -> None | typing.Sequence[T | None]:
     """convert a dict of column data to a list of column data"""
 
-    if column_data is None or isinstance(column_data, list):
+    if headers is not None and len(headers) != n_columns:
+        raise Exception('mismatching number of columns')
+
+    if column_data is None:
+        return column_data
+
+    if isinstance(column_data, list):
+        if len(column_data) != n_columns:
+            raise Exception('mismatching number of columns')
         return column_data
 
     elif isinstance(column_data, str):
@@ -490,7 +497,7 @@ def _process_header_location(
 
 def _convert_table_to_str(
     str_cells: list[list[str]],
-    str_headers: list[list[str]] | None,
+    str_headers: list[list[str]],
     column_widths: typing.Sequence[int],
     compact: bool,
     indent: str | int | None,
@@ -566,7 +573,7 @@ def _convert_table_to_str(
     )
 
     # render header as strs
-    if str_headers is not None:
+    if len(str_headers) > 0:
 
         # build header delimiter
         if not header_equals_outer and not header_equals_inner:
@@ -599,7 +606,7 @@ def _convert_table_to_str(
 
         # build bottom header row separator
         if header_equals_inner:
-            header_cross: spec.BorderCharName = 'cross'
+            header_cross = 'cross'
         else:
             if header_equals_outer:
                 header_cross = 'upper_t'
@@ -616,7 +623,7 @@ def _convert_table_to_str(
     # determine header positions
     top_header = False
     bottom_header = False
-    if str_headers is not None:
+    if len(str_headers) > 0:
         top_header, bottom_header = _process_header_location(header_location)
 
     # add outer borders
