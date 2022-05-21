@@ -4,11 +4,13 @@ import math
 import typing
 from typing_extensions import Literal, TypedDict
 
+if typing.TYPE_CHECKING:
+    import numpy as np
+    import numpy.typing
+
 from .. import spec
 from . import grid_utils
 from . import line_utils
-
-import numpy.typing
 
 
 def create_blank_raster(
@@ -128,7 +130,8 @@ class CandlestickRenderResult(TypedDict):
 
 
 def raster_candlesticks(
-    ohlc: typing.Sequence[typing.Sequence[int | float]],
+    ohlc: typing.Sequence[typing.Sequence[int | float]]
+    | np.ndarray[typing.Any, typing.Any],
     sample_grid: spec.Grid,
     render_grid: spec.Grid,
     justify: spec.HorizontalJustification = 'left',

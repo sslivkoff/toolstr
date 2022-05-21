@@ -25,7 +25,7 @@ class BorderChars(TypedDict):
     right_t: str
 
 
-BorderCharName = typing.Literal[
+BorderCharName = Literal[
     'horizontal',
     'vertical',
     'upper_left',

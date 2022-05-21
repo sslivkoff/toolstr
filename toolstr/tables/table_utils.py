@@ -39,7 +39,7 @@ def print_table(
     *,
     add_row_index: bool = False,
     row_start_index: int = 1,
-    missing_columns: typing.Literal['clip', 'fill', 'error'] = 'error',
+    missing_columns: typing.Literal['fill', 'clip', 'error'] = 'error',
     empty_str: str = '',
     format: FormatKwargs | None = None,
     column_format: ColumnData[FormatKwargs] | None = None,
