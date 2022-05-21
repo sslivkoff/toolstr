@@ -51,7 +51,7 @@ def print_dict_of_lists_as_table(
 
 def print_list_of_dicts_as_table(
     list_of_dicts: typing.Sequence[typing.Mapping[typing.Any, typing.Any]],
-    keys: typing.Sequence[typing.Any] = None,
+    keys: typing.Sequence[typing.Any] | None = None,
     **table_kwargs: typing.Any,
 ) -> str | None:
 
@@ -60,7 +60,7 @@ def print_list_of_dicts_as_table(
         keys = []
         key_set = set()
         for item in list_of_dicts:
-            for key in list_of_dicts.keys():
+            for key in item.keys():
                 if key not in key_set:
                     keys.append(key)
                     key_set.add(key)

@@ -60,10 +60,9 @@ def print_table(
     column_gap: int | str | None = None,
     separate_all_rows: bool = False,
     compact: bool = False,
-    outer_borders: bool | None = None,
-    border_style: str | spec.BorderChars | None = None,
-    header_border_style: str | spec.BorderChars | None = None,
-    outer_border_style: str | spec.BorderChars | None = None,
+    border: str | spec.BorderChars | None = None,
+    header_border: str | spec.BorderChars | None = None,
+    outer_border: str | spec.BorderChars | None = None,
     #
     # cell
     justify: spec.HorizontalJustification = 'right',
@@ -113,12 +112,11 @@ def print_table(
         indent=indent,
         max_table_width=max_table_width,
         header_location=header_location,
-        border_style=border_style,
+        border=border,
         column_gap=column_gap,
         outer_gap=outer_gap,
-        outer_borders=outer_borders,
-        header_border_style=header_border_style,
-        outer_border_style=outer_border_style,
+        header_border=header_border,
+        outer_border=outer_border,
         separator_indices=separator_indices,
     )
 
@@ -265,7 +263,7 @@ def _stringify_all(
         column_justify, n_columns, headers
     )
     str_cells = [
-        _trim_justify_cells(str_row, column_widths, column_justify, justify)
+        _trim_justify(str_row, column_widths, column_justify, justify)
         for str_row in str_cells
     ]
     if str_headers is not None:
@@ -273,19 +271,15 @@ def _stringify_all(
             header_justify = 'right'
         if isinstance(header_justify, list) and add_row_index:
             header_justify = [header_justify[0]] + header_justify
-        header_justify = _convert_column_dict_to_list(header_justify, n_columns, headers)
-        if header_justify is not None and len(header_justify) != len(
-            str_headers[0]
-        ):
-            raise Exception('header_justify has wrong length')
+        header_justify = _convert_column_dict_to_list(
+            header_justify, n_columns, headers
+        )
         str_headers = [
-            _trim_justify_cells(
-                str_header, column_widths, header_justify, justify
-            )
+            _trim_justify(str_header, column_widths, header_justify, justify)
             for str_header in str_headers
         ]
 
-    # add styles
+    # add styles to hows and header
     if use_styles:
         column_style = _convert_column_dict_to_list(
             column_style, n_columns, headers
@@ -417,13 +411,16 @@ def _stringify_cells(
     return row_str_cells
 
 
-def _trim_justify_cells(
+def _trim_justify(
     str_row: typing.Sequence[str],
     column_widths: typing.Sequence[int],
     column_justify: typing.Sequence[None | spec.HorizontalJustification] | None,
     justify: spec.HorizontalJustification,
 ) -> list[str]:
     """trim or justify cells in row to target sizes"""
+
+    if column_justify is not None and len(column_justify) != len(str_row):
+        raise Exception('wrong length of list')
 
     output = []
     for c, cell in enumerate(str_row):
@@ -499,12 +496,11 @@ def _convert_table_to_str(
     indent: str | int | None,
     max_table_width: int | None,
     header_location: HeaderLocation | None,
-    border_style: str | spec.BorderChars | None,
-    header_border_style: str | spec.BorderChars | None,
-    outer_border_style: str | spec.BorderChars | None,
+    border: str | spec.BorderChars | None,
+    header_border: str | spec.BorderChars | None,
+    outer_border: bool | str | spec.BorderChars | None,
     column_gap: int | str | None,
     outer_gap: int | str | None,
-    outer_borders: bool | None,
     separator_indices: set[int],
 ) -> str:
 
@@ -512,45 +508,41 @@ def _convert_table_to_str(
     if compact:
         outer_gap = ''
         column_gap = ''
-        border_style = outlines.get_border_chars()
-        border_style['vertical'] = ' '
-        border_style['cross'] = border_style['horizontal']
-
-    if outer_borders is None:
-        outer_borders = outer_border_style is not None
+        border = outlines.get_border_chars()
+        border['vertical'] = ' '
+        border['cross'] = border['horizontal']
 
     # determine border styles
-    if border_style is None:
-        border_style = outlines.get_border_chars()
-    if isinstance(border_style, str):
-        border_style = outlines.get_border_chars_by_name(border_style)
-    horizontal = border_style['horizontal']
-    vertical = border_style['vertical']
-    cross = border_style['cross']
+    if border is None:
+        border = outlines.get_border_chars()
+    elif isinstance(border, str):
+        border = outlines.get_border_chars_by_name(border)
 
-    if header_border_style is None:
-        header_border_style = border_style
-    elif isinstance(header_border_style, str):
-        header_border_style = outlines.get_border_chars_by_name(
-            header_border_style
-        )
-    if outer_border_style is None:
-        outer_border_style = header_border_style
-    elif isinstance(outer_border_style, str):
-        outer_border_style = outlines.get_border_chars_by_name(
-            outer_border_style
-        )
-    outer_equals_inner = outer_border_style['cross'] == border_style['cross']
-    header_equals_inner = header_border_style['cross'] == border_style['cross']
-    header_equals_outer = (
-        header_border_style['cross'] == outer_border_style['cross']
-    )
+    # determine header border style
+    if header_border is None:
+        header_border = border
+    elif isinstance(header_border, str):
+        header_border = outlines.get_border_chars_by_name(header_border)
+
+    # determine outer border style
+    if isinstance(outer_border, bool):
+        if outer_border:
+            outer_border = header_border
+        else:
+            outer_border = None
+    if isinstance(outer_border, str):
+        outer_border = outlines.get_border_chars_by_name(outer_border)
+
+    # determine whether borders match
+    header_equals_inner = header_border['cross'] == border['cross']
+    if outer_border is not None:
+        outer_equals_inner = outer_border['cross'] == border['cross']
+        header_equals_outer = header_border['cross'] == outer_border['cross']
+    else:
+        outer_equals_inner = True
+        header_equals_outer = True
 
     # determine gaps and delimiters
-    if indent is None:
-        indent = ''
-    if isinstance(indent, int):
-        indent = ' ' * indent
     if column_gap is None:
         column_gap = '  '
     if isinstance(column_gap, int):
@@ -559,96 +551,67 @@ def _convert_table_to_str(
         outer_gap = ' ' * outer_gap
     if outer_gap is None:
         outer_gap = column_gap
-    column_delimiter = column_gap + vertical + column_gap
-    outer_vertical = outer_border_style['vertical']
 
     # render rows as strs
-    formatted_rows = []
-    for str_row in str_cells:
-
-        # concatenate subcomponents
-        formatted_row = outer_gap + column_delimiter.join(str_row) + outer_gap
-        if outer_borders:
-            formatted_row = outer_vertical + formatted_row + outer_vertical
-        formatted_row = indent + formatted_row
-
-        formatted_rows.append(formatted_row)
-
-    # build row separator
-    separator_delimiter = (
-        len(column_gap) * horizontal + cross + len(column_gap) * horizontal
-    )
-    separator_spaces = [
-        column_width * horizontal for column_width in column_widths
+    inner_delimiter = column_gap + border['vertical'] + column_gap
+    formatted_rows = [
+        outer_gap + inner_delimiter.join(str_row) + outer_gap
+        for str_row in str_cells
     ]
-    row_separator = (
-        len(outer_gap) * horizontal
-        + separator_delimiter.join(separator_spaces)
-        + len(outer_gap) * horizontal
+    row_separator = _build_row_separator(
+        column_widths=column_widths,
+        border=border,
+        column_gap=column_gap,
+        outer_gap=outer_gap,
     )
-    if outer_borders:
-        if outer_equals_inner:
-            outer_left_t = outer_border_style['left_t']
-            outer_right_t = outer_border_style['right_t']
-        else:
-            outer_left_t = outer_border_style['vertical']
-            outer_right_t = outer_border_style['vertical']
-        row_separator = outer_left_t + row_separator + outer_right_t
 
+    # render header as strs
     if str_headers is not None:
-        # stylize header
 
-        header_vertical = header_border_style['vertical']
-        header_horizontal = header_border_style['horizontal']
+        # build header delimiter
+        if not header_equals_outer and not header_equals_inner:
+            header_vertical = ' '
+        else:
+            header_vertical = header_border['vertical']
+        header_delimiter = column_gap + header_vertical + column_gap
+
+        # build header rows
+        formatted_headers = [
+            outer_gap + header_delimiter.join(str_header) + outer_gap
+            for str_header in str_headers
+        ]
+
+        # build top header row separator
         if header_equals_inner:
-            header_cross = header_border_style['cross']
+            header_cross: spec.BorderCharName = 'cross'
         else:
             if header_equals_outer:
-                header_cross = header_border_style['lower_t']
+                header_cross = 'lower_t'
             else:
-                header_cross = header_border_style['horizontal']
-                header_vertical = ' '
-
-        header_column_delimiter = column_gap + header_vertical + column_gap
-
-        formatted_headers = []
-        for str_header in str_headers:
-            formatted_header = (
-                outer_gap + header_column_delimiter.join(str_header) + outer_gap
-            )
-            if outer_borders:
-                formatted_header = (
-                    outer_vertical + formatted_header + outer_vertical
-                )
-            formatted_header = indent + formatted_header
-
-            formatted_headers.append(formatted_header)
-
-        separator_delimiter = (
-            len(column_gap) * header_horizontal
-            + header_cross
-            + len(column_gap) * header_horizontal
+                header_cross = 'horizontal'
+        header_top_row_separator = _build_row_separator(
+            column_widths=column_widths,
+            border=header_border,
+            column_gap=column_gap,
+            outer_gap=outer_gap,
+            cross_symbol=header_cross,
         )
-        header_separator_spaces = [
-            column_width * header_horizontal for column_width in column_widths
-        ]
-        header_row_separator = (
-            len(outer_gap) * header_horizontal
-            + separator_delimiter.join(header_separator_spaces)
-            + len(outer_gap) * header_horizontal
-        )
-        if outer_borders:
+
+        # build bottom header row separator
+        if header_equals_inner:
+            header_cross: spec.BorderCharName = 'cross'
+        else:
             if header_equals_outer:
-                outer_left_t = outer_border_style['left_t']
-                outer_right_t = outer_border_style['right_t']
+                header_cross = 'upper_t'
             else:
-                outer_left_t = outer_border_style['vertical']
-                outer_right_t = outer_border_style['vertical']
-            header_row_separator = (
-                outer_left_t + header_row_separator + outer_right_t
-            )
-
-    row_separator = indent + row_separator
+                header_cross = 'horizontal'
+        header_bottom_row_separator = _build_row_separator(
+            column_widths=column_widths,
+            border=header_border,
+            column_gap=column_gap,
+            outer_gap=outer_gap,
+            cross_symbol=header_cross,
+        )
 
     # determine header positions
     top_header = False
@@ -656,23 +619,52 @@ def _convert_table_to_str(
     if str_headers is not None:
         top_header, bottom_header = _process_header_location(header_location)
 
-    if outer_borders:
-        outer_horizontal = outer_border_style['horizontal']
-        upper_left = outer_border_style['upper_left']
-        upper_right = outer_border_style['upper_right']
-        if header_equals_outer:
-            upper_t = outer_border_style['upper_t']
-        else:
-            upper_t = outer_border_style['horizontal']
+    # add outer borders
+    if outer_border is not None:
+
+        # get outer parameters
         if outer_equals_inner:
-            lower_t = outer_border_style['lower_t']
+            outer_left_t = outer_border['left_t']
+            outer_right_t = outer_border['right_t']
         else:
-            lower_t = outer_border_style['horizontal']
+            outer_left_t = outer_border['vertical']
+            outer_right_t = outer_border['vertical']
+
+        # add outer border to formatted rows
+        outer_vertical = outer_border['vertical']
+        formatted_rows = [
+            outer_vertical + formatted_row + outer_vertical
+            for formatted_row in formatted_rows
+        ]
+
+        # add outer border to row separator
+        row_separator = outer_left_t + row_separator + outer_right_t
+
+        # add outer border to header rows
+        formatted_headers = [
+            outer_vertical + formatted_header + outer_vertical
+            for formatted_header in formatted_headers
+        ]
+
+        # load more chars
+        outer_horizontal = outer_border['horizontal']
+
+        # create top outer border
+        if top_header:
+            top_interface = header_equals_outer
+        else:
+            top_interface = outer_equals_inner
+        if top_interface:
+            upper_t = outer_border['upper_t']
+        else:
+            upper_t = outer_border['horizontal']
         top_border_separator = (
             len(column_gap) * outer_horizontal
             + upper_t
             + len(column_gap) * outer_horizontal
         )
+        upper_left = outer_border['upper_left']
+        upper_right = outer_border['upper_right']
         top_border = (
             upper_left
             + outer_horizontal * len(outer_gap)
@@ -683,13 +675,22 @@ def _convert_table_to_str(
             + upper_right
         )
 
-        lower_left = outer_border_style['lower_left']
-        lower_right = outer_border_style['lower_right']
+        # create bottom outer border
+        if bottom_header:
+            bottom_interface = header_equals_outer
+        else:
+            bottom_interface = outer_equals_inner
+        if bottom_interface:
+            lower_t = outer_border['lower_t']
+        else:
+            lower_t = outer_border['horizontal']
         bottom_border_separator = (
             len(column_gap) * outer_horizontal
             + lower_t
             + len(column_gap) * outer_horizontal
         )
+        lower_left = outer_border['lower_left']
+        lower_right = outer_border['lower_right']
         bottom_border = (
             lower_left
             + outer_horizontal * len(outer_gap)
@@ -700,22 +701,42 @@ def _convert_table_to_str(
             + lower_right
         )
 
+        # add outer border to header row separator
+        if header_equals_outer:
+            outer_left_t = outer_border['left_t']
+            outer_right_t = outer_border['right_t']
+        else:
+            outer_left_t = outer_border['vertical']
+            outer_right_t = outer_border['vertical']
+        header_top_row_separator = (
+            outer_left_t + header_top_row_separator + outer_right_t
+        )
+        header_bottom_row_separator = (
+            outer_left_t + header_bottom_row_separator + outer_right_t
+        )
+
     # gather lines
     lines = []
     if top_header:
         for formatted_header in formatted_headers:
             lines.append(formatted_header)
-        lines.append(header_row_separator)
+        lines.append(header_top_row_separator)
     for r, formatted_row in enumerate(formatted_rows):
         lines.append(formatted_row)
         if r in separator_indices:
             lines.append(row_separator)
     if bottom_header:
-        lines.append(header_row_separator)
+        lines.append(header_bottom_row_separator)
         for formatted_header in formatted_headers:
             lines.append(formatted_header)
-    if outer_borders:
+    if outer_border is not None:
         lines = [top_border] + lines + [bottom_border]
+
+    # add indent
+    if isinstance(indent, int):
+        indent = ' ' * indent
+    if indent:
+        lines = [indent + line for line in lines]
 
     # trim table width
     if max_table_width is not None:
@@ -724,15 +745,35 @@ def _convert_table_to_str(
         for line in lines:
             if len(line) > max_table_width:
                 if ellipses:
-                    line = line[:max_table_width - 3] + '...'
+                    line = line[: max_table_width - 3] + '...'
                 else:
                     line = line[:max_table_width]
             trimmed_lines.append(line)
         lines = trimmed_lines
 
+    # concatenate lines
     table_as_str = '\n'.join(lines)
 
     return table_as_str
+
+
+def _build_row_separator(
+    column_widths: typing.Sequence[int],
+    border: spec.BorderChars,
+    column_gap: str,
+    outer_gap: str,
+    cross_symbol: spec.BorderCharName = 'cross',
+) -> str:
+
+    horizontal = border['horizontal']
+    cross = border[cross_symbol]
+
+    cgap = len(column_gap)
+    ogap = len(outer_gap)
+
+    delimiter = cgap * horizontal + cross + cgap * horizontal
+    spaces = [column_width * horizontal for column_width in column_widths]
+    return ogap * horizontal + delimiter.join(spaces) + ogap * horizontal
 
 
 def _print_table(
