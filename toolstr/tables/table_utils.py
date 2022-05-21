@@ -412,12 +412,11 @@ def _stringify_cells(
 
                 # get format kwargs
                 cell_format: typing.Mapping[str, typing.Any] | None
-                if format is not None:
-                    cell_format = format
-                elif column_format is not None:
+                cell_format = None
+                if column_format is not None:
                     cell_format = column_format[c]
-                else:
-                    cell_format = None
+                if format is not None and cell_format is None:
+                    cell_format = format
 
                 # format as str
                 if cell_format is not None:
