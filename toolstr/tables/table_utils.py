@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import typing
 import types
+from typing_extensions import TypedDict
 
 from .. import formatting
 from .. import outlines
@@ -12,8 +13,18 @@ from . import multiline_tables
 if typing.TYPE_CHECKING:
     import rich.console
 
+    class TableStyleContext(TypedDict):
+        cell: typing.Any
+        str_cell: str
+        row: typing.Sequence[typing.Any]
+        str_row: typing.Sequence[str]
+        label: str | None
+        str_label: typing.Sequence[str] | None
+        r: int
+        c: int
+
     Row = typing.Sequence[typing.Any]
-    Style = typing.Union[str, typing.Callable[..., str]]
+    Style = typing.Union[str, typing.Callable[[TableStyleContext], str]]
     HeaderSingleLocation = typing.Literal['top', 'bottom']
     HeaderPluralLocation = typing.Tuple[
         HeaderSingleLocation,
@@ -49,7 +60,6 @@ def print_table(
     file: typing.TextIO | None = None,
     console: rich.console.Console | None = None,
     use_styles: bool | None = None,
-    use_rich: bool | None = None,
     #
     # table
     header_location: HeaderLocation | None = None,
@@ -75,9 +85,6 @@ def print_table(
     header_style: ColumnData[Style] | None = None,
 ) -> str | None:
 
-    # determine whether to use styles
-    use_styles = _should_use_styles(use_styles, use_rich)
-
     # filter row separators
     rows, separator_indices = _filter_separator_indices(rows, separate_all_rows)
 
@@ -88,7 +95,7 @@ def print_table(
     rows, headers = _add_index(rows, headers, add_row_index, row_start_index)
 
     # convert cells and headers to str
-    str_cells, str_headers, column_widths = _stringify_all(
+    str_cells, str_headers, column_widths, use_styles = _stringify_all(
         rows=rows,
         headers=headers,
         column_widths=column_widths,
@@ -127,23 +134,34 @@ def print_table(
     if return_str:
         return table_as_str
     else:
-        _print_table(table_as_str, use_rich, use_styles, console, file)
+        _print_table(table_as_str, use_styles, console, file)
         return None
 
 
-def _should_use_styles(use_styles: bool, use_rich: bool) -> bool:
-    if use_styles:
-        try:
-            import rich
-        except ImportError:
-            raise Exception('rich required for styles, e.g. `pip install rich`')
+def _should_use_styles(use_styles: bool | None) -> bool:
+
+    # check that value of use_styles has proper value
+    if not isinstance(use_styles, bool) and use_styles is not None:
+        raise Exception('use_styles should be bool or None')
+
     if use_styles is None:
+
+        # use styles if rich is importable
         try:
             import rich
 
             use_styles = True
         except ImportError:
             use_styles = False
+
+    elif use_styles:
+
+        # test whether rich can be imported
+        try:
+            import rich
+        except ImportError:
+            raise Exception('rich required for styles, e.g. `pip install rich`')
+
     return use_styles
 
 
@@ -230,7 +248,6 @@ def _stringify_all(
     empty_str: str,
     format: FormatKwargs | None,
     column_format: ColumnData[FormatKwargs] | None,
-    use_styles: bool,
     add_row_index: bool,
     justify: spec.HorizontalJustification,
     column_justify: ColumnData[spec.HorizontalJustification] | None,
@@ -238,10 +255,11 @@ def _stringify_all(
     | ColumnData[spec.HorizontalJustification]
     | None,
     header_vertical_justify: ColumnData[spec.VerticalJustification] | None,
+    use_styles: bool | None,
     style: Style | None,
     column_style: ColumnData[Style] | None,
     header_style: ColumnData[Style] | None,
-) -> tuple[list[list[str]], list[list[str]], typing.Sequence[int]]:
+) -> tuple[list[list[str]], list[list[str]], typing.Sequence[int], bool]:
 
     # determine number of columns
     if len(rows) > 0:
@@ -249,7 +267,7 @@ def _stringify_all(
     elif headers is not None:
         n_columns = len(headers)
     else:
-        return [], [], []
+        return [], [], [], False
 
     # convert cells to str
     column_format = _convert_column_dict_to_list(
@@ -295,31 +313,46 @@ def _stringify_all(
     ]
 
     # add styles to rows and header
+    if use_styles is None:
+        use_styles = _should_use_styles(use_styles)
     if use_styles:
 
-        # style rows
+        # arrange column style specifications
         column_style = _convert_column_dict_to_list(
             column_style, n_columns, headers
         )
-        str_cells = [
-            _stylize_row(str_row, style, column_style) for str_row in str_cells
-        ]
+
+        # style rows
+        str_cells = _stylize_rows(
+            rows=rows,
+            str_rows=str_cells,
+            style=style,
+            column_style=column_style,
+            headers=headers,
+            str_headers=str_headers,
+        )
 
         # stylize header
         if isinstance(header_style, list) and add_row_index:
             header_style = [header_style[0]] + header_style
-        if isinstance(header_style, str):
-            header_style = [header_style] * len(str_headers[0])
-        if header_style is not None and len(header_style) != len(
+        header_style = _convert_column_dict_to_list(
+            header_style, n_columns, headers
+        )
+        if isinstance(header_style, list) and len(header_style) != len(
             str_headers[0]
         ):
             raise Exception('header_style has wrong length')
-        str_headers = [
-            _stylize_row(str_header, style, header_style)
-            for str_header in str_headers
-        ]
 
-    return str_cells, str_headers, column_widths
+        str_headers = _stylize_rows(
+            rows=str_headers,
+            str_rows=str_headers,
+            style=None,
+            column_style=header_style,
+            headers=headers,
+            str_headers=str_headers,
+        )
+
+    return str_cells, str_headers, column_widths, use_styles
 
 
 def _get_column_widths(str_cells: list[list[str]]) -> list[int]:
@@ -471,27 +504,55 @@ def _trim_justify(
     return output
 
 
-def _stylize_row(
-    row: list[str],
+def _stylize_rows(
+    rows: typing.Sequence[typing.Sequence[typing.Any]],
+    str_rows: list[list[str]],
+    headers: typing.Sequence[typing.Any] | None,
+    str_headers: list[list[str]],
     style: Style | None,
     column_style: ColumnData[Style] | None,
-) -> list[str]:
-    stylized_row = []
-    for c, cell in enumerate(row):
-        if column_style is not None and column_style[c] is not None:
-            cell_style: Style | None = column_style[c]
-        elif style is not None:
-            cell_style = style
-        else:
-            cell_style = None
-        if cell_style is not None:
+) -> list[list[str]]:
+
+    stylized_rows = []
+    for r, (row, str_row) in enumerate(zip(rows, str_rows)):
+
+        stylized_row = []
+        for c, (cell, str_cell) in enumerate(zip(row, str_row)):
+
+            # use column style if specified, otherwise use global style
+            if column_style is not None and column_style[c] is not None:
+                cell_style: Style | None = column_style[c]
+            elif style is not None:
+                cell_style = style
+            else:
+                cell_style = None
+
+            # if a function, call with table style context
             if isinstance(cell_style, types.FunctionType):
-                cell_style = cell_style(cell)
-            if not isinstance(cell_style, str):
-                raise Exception('could not convert style to str')
-            cell = '[' + cell_style + ']' + cell + '[/' + cell_style + ']'
-        stylized_row.append(cell)
-    return stylized_row
+                table_style_context: TableStyleContext = {
+                    'cell': cell,
+                    'str_cell': str_cell,
+                    'row': row,
+                    'str_row': str_row,
+                    'labels': headers,
+                    'str_labels': str_headers,
+                    'r': r,
+                    'c': c,
+                }
+                cell_style = cell_style(table_style_context)
+
+            # apply style if present
+            if cell_style is not None:
+                if not isinstance(cell_style, str):
+                    raise Exception('could not convert style to str')
+                str_cell = (
+                    '[' + cell_style + ']' + str_cell + '[/' + cell_style + ']'
+                )
+            stylized_row.append(str_cell)
+
+        stylized_rows.append(stylized_row)
+
+    return stylized_rows
 
 
 def _process_header_location(
@@ -803,25 +864,22 @@ def _build_row_separator(
 
 def _print_table(
     table_as_str: str,
-    use_rich: bool | None,
     use_styles: bool,
     console: rich.console.Console | None,
     file: typing.TextIO | None,
 ) -> None:
-    if use_rich is None:
-        if console is not None:
-            use_rich = True
-        else:
-            use_rich = use_styles
-    if use_rich:
-        import rich.console
+
+    if use_styles:
 
         if console is None:
+            import rich.console
+
             console = rich.console.Console(
                 file=file,
                 theme=rich.theme.Theme(inherit=False),
                 width=10000,
             )
         console.print(table_as_str)
+
     else:
         print(table_as_str)
