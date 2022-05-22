@@ -4,7 +4,22 @@ import typing
 from typing_extensions import Literal, TypedDict
 
 if typing.TYPE_CHECKING:
+
     import numpy.typing
+
+    class NumberFormat(TypedDict, total=False):
+        percentage: bool
+        scientific: bool | None
+        signed: bool
+        commas: bool
+        decimals: int | None
+        nonfractional_decimals: int | None
+        fractional_decimals: int | None
+        trailing_zeros: bool
+        prefix: str | None
+        postfix: str | None
+        order_of_magnitude: bool
+        oom_blank: str
 
 
 HorizontalJustification = Literal['left', 'right', 'center']

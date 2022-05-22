@@ -18,8 +18,8 @@ if typing.TYPE_CHECKING:
         str_cell: str
         row: typing.Sequence[typing.Any]
         str_row: typing.Sequence[str]
-        label: str | None
-        str_label: typing.Sequence[str] | None
+        labels: typing.Sequence[str]
+        str_labels: typing.Sequence[str]
         r: int
         c: int
 
