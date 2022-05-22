@@ -133,6 +133,7 @@ def format_number(
     prefix: typing.Optional[str] = None,
     postfix: typing.Optional[str] = None,
     order_of_magnitude: bool = False,
+    oom_blank: str = '',
 ) -> str:
     """
     TODO:
@@ -141,7 +142,7 @@ def format_number(
     """
 
     if order_of_magnitude:
-        value, new_postfix = _get_order_of_magnitude(value)
+        value, new_postfix = _get_order_of_magnitude(value, oom_blank)
         if postfix is None:
             postfix = new_postfix
         else:
@@ -251,6 +252,7 @@ def format_change(
 
 def _get_order_of_magnitude(
     value: typing.SupportsFloat,
+    oom_blank: str = '',
 ) -> tuple[typing.Union[int, float], str]:
     value = spec.to_numeric_type(value)
     abs_value = abs(value)
@@ -267,4 +269,4 @@ def _get_order_of_magnitude(
     elif abs_value >= 1e3:
         return value / 1e3, 'K'
     else:
-        return value, ''
+        return value, oom_blank
