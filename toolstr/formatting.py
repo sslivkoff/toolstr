@@ -59,6 +59,9 @@ def format(
 
     if format_type is None:
 
+        if isinstance(value, bool):
+            return str(value)
+
         # python3.7 compatibility
         # supports_int = isinstance(value, typing.SupportsFloat)
         supports_int = hasattr(value, '__int__')
@@ -176,6 +179,8 @@ def format_number(
         format_str = '{:,.' + str(decimals) + 'e}'
     elif decimals == 0:
         format_str = '{:,d}'
+        if not isinstance(numeric, int):
+            numeric = round(numeric)
     else:
         format_str = '{:,.' + str(decimals) + 'f}'
 
