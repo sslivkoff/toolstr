@@ -271,6 +271,7 @@ braille_dict: dict[tuple[tuple[int, ...], ...], str] = {
 def create_braille_sparkline(
     data: typing.Sequence[int | float],
     width: int,
+    height: int | None,
 ) -> str:
     import numpy as np
 
@@ -283,8 +284,11 @@ def create_braille_sparkline(
     ymax = samples.max()
     dy = ymax - ymin
 
+    if height is None:
+        height = 1
+
     grid = {
-        'n_rows': 4,
+        'n_rows': 4 * height,
         'n_columns': 2 * width,
         'xmin': 0,
         'xmax': 2 * width,
