@@ -15,6 +15,7 @@ def print_multiline_table(
     row_start_index: int = 1,
     vertical_justify: spec.VerticalJustification
     | table_utils.ColumnData[spec.VerticalJustification] = 'center',
+    separate_all_rows: bool = True,
     **table_kwargs: typing.Any
 ) -> str | None:
     """
@@ -69,7 +70,7 @@ def print_multiline_table(
     for row, height in zip(rows, row_heights):
 
         # add row separator
-        if len(new_rows) > 0:
+        if separate_all_rows and len(new_rows) > 0:
             new_rows.append(None)
 
         # split into lines
