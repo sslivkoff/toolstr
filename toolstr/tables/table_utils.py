@@ -363,7 +363,12 @@ def _get_column_widths(str_cells: list[list[str]]) -> list[int]:
     max_column_widths: list[int] = [0] * n_columns
     for row_str_cells in str_cells:
         for c, str_cell in enumerate(row_str_cells):
-            cell_width = len(str_cell)
+            if '[' in str_cell:
+                import rich.text
+
+                cell_width = rich.text.Text.from_markup(str_cell).cell_len
+            else:
+                cell_width = len(str_cell)
             if cell_width > max_column_widths[c]:
                 max_column_widths[c] = cell_width
 
@@ -878,6 +883,7 @@ def _print_table(
                 file=file,
                 theme=rich.theme.Theme(inherit=False),
                 width=10000,
+                color_system='truecolor',
             )
         console.print(table_as_str)
 
