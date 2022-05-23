@@ -69,7 +69,7 @@ def print_table(
     outer_gap: int | str | None = None,
     column_gap: int | str | None = None,
     separate_all_rows: bool = False,
-    compact: bool = False,
+    compact: bool | int = False,
     border: str | spec.BorderChars | None = None,
     header_border: str | spec.BorderChars | None = None,
     outer_border: str | spec.BorderChars | None = None,
@@ -597,10 +597,12 @@ def _convert_table_to_str(
 
     # use compact format
     if compact:
-        outer_gap = ''
-        column_gap = ''
+        if outer_gap is None:
+            outer_gap = ''
+        if column_gap is None:
+            column_gap = ''
         border = outlines.get_border_chars()
-        border['vertical'] = ' '
+        border['vertical'] = ' ' * int(compact)
         border['cross'] = border['horizontal']
 
     # determine border styles
