@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import typing
 
-import tooltime
+if typing.TYPE_CHECKING:
+    import tooltime
 
 from . import spec
 
@@ -111,6 +112,7 @@ def format_timestamp(
     representation: tooltime.TimestampExtendedRepresentation = 'TimestampISO',
     **kwargs: typing.Any,
 ) -> str:
+    import tooltime
 
     converted: typing.Any = tooltime.convert_timestamp(
         timestamp,
