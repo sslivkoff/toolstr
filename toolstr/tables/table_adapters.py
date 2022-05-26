@@ -30,7 +30,7 @@ def print_dataframe_as_table(
     # convert to list of lists
     rows = df.values.tolist()
 
-    return table_utils.print_table(rows=rows, headers=columns, **table_kwargs)
+    return table_utils.print_table(rows=rows, labels=columns, **table_kwargs)
 
 
 def print_dict_of_lists_as_table(
@@ -46,7 +46,7 @@ def print_dict_of_lists_as_table(
     # create rows
     rows = [list(row) for row in zip(*[dict_of_lists[key] for key in keys])]
 
-    return table_utils.print_table(rows=rows, headers=keys, **table_kwargs)
+    return table_utils.print_table(rows=rows, labels=keys, **table_kwargs)
 
 
 def print_list_of_dicts_as_table(
@@ -73,4 +73,4 @@ def print_list_of_dicts_as_table(
             row.append(item.get(key))
         rows.append(row)
 
-    return table_utils.print_table(rows=rows, headers=keys, **table_kwargs)
+    return table_utils.print_table(rows=rows, labels=keys, **table_kwargs)

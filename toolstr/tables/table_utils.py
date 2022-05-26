@@ -46,7 +46,7 @@ def print_table(
     #
     # content
     rows: typing.Sequence[None | typing.Sequence[typing.Any]],
-    headers: typing.Sequence[str] | None = None,
+    labels: typing.Sequence[str] | None = None,
     *,
     add_row_index: bool = False,
     row_start_index: int = 1,
@@ -62,7 +62,7 @@ def print_table(
     use_styles: bool | None = None,
     #
     # table
-    header_location: HeaderLocation | None = None,
+    label_location: HeaderLocation | None = None,
     max_table_width: int | None = None,
     column_widths: typing.Sequence[int] | None = None,
     indent: str | int | None = None,
@@ -71,44 +71,44 @@ def print_table(
     separate_all_rows: bool = False,
     compact: bool | int = False,
     border: str | spec.BorderChars | None = None,
-    header_border: str | spec.BorderChars | None = None,
+    label_border: str | spec.BorderChars | None = None,
     outer_border: str | spec.BorderChars | None = None,
     #
     # cell
     justify: spec.HorizontalJustification = 'right',
     column_justify: ColumnData[spec.HorizontalJustification] | None = None,
-    header_justify: ColumnData[spec.HorizontalJustification] | None = None,
-    header_vertical_justify: ColumnData[spec.VerticalJustification]
+    label_justify: ColumnData[spec.HorizontalJustification] | None = None,
+    label_vertical_justify: ColumnData[spec.VerticalJustification]
     | None = 'bottom',
     style: Style | None = None,
     column_style: ColumnData[Style] | None = None,
-    header_style: ColumnData[Style] | None = None,
+    label_style: ColumnData[Style] | None = None,
 ) -> str | None:
 
     # filter row separators
     rows, separator_indices = _filter_separator_indices(rows, separate_all_rows)
 
     # check missing columns
-    rows, headers = _fix_missing_data(rows, headers, missing_columns, empty_str)
+    rows, labels = _fix_missing_data(rows, labels, missing_columns, empty_str)
 
     # add row index
-    rows, headers = _add_index(rows, headers, add_row_index, row_start_index)
+    rows, labels = _add_index(rows, labels, add_row_index, row_start_index)
 
-    # convert cells and headers to str
-    str_cells, str_headers, column_widths, use_styles = _stringify_all(
+    # convert cells and labels to str
+    str_cells, str_labels, column_widths, use_styles = _stringify_all(
         rows=rows,
-        headers=headers,
+        labels=labels,
         column_widths=column_widths,
         format=format,
         column_format=column_format,
         empty_str=empty_str,
         justify=justify,
         column_justify=column_justify,
-        header_justify=header_justify,
-        header_vertical_justify=header_vertical_justify,
+        label_justify=label_justify,
+        label_vertical_justify=label_vertical_justify,
         style=style,
         column_style=column_style,
-        header_style=header_style,
+        label_style=label_style,
         use_styles=use_styles,
         add_row_index=add_row_index,
     )
@@ -116,16 +116,16 @@ def print_table(
     # layout table as single str
     table_as_str = _convert_table_to_str(
         str_cells=str_cells,
-        str_headers=str_headers,
+        str_labels=str_labels,
         column_widths=column_widths,
         compact=compact,
         indent=indent,
         max_table_width=max_table_width,
-        header_location=header_location,
+        label_location=label_location,
         border=border,
         column_gap=column_gap,
         outer_gap=outer_gap,
-        header_border=header_border,
+        label_border=label_border,
         outer_border=outer_border,
         separator_indices=separator_indices,
     )
@@ -189,7 +189,7 @@ def _filter_separator_indices(
 
 def _fix_missing_data(
     rows: list[typing.Sequence[typing.Any]],
-    headers: typing.Sequence[str] | None,
+    labels: typing.Sequence[str] | None,
     missing_columns: typing.Literal['clip', 'fill', 'error'],
     empty_str: str,
 ) -> tuple[list[typing.Sequence[typing.Any]], typing.Sequence[str] | None]:
@@ -199,9 +199,9 @@ def _fix_missing_data(
         n_row_columns = len(row)
         min_columns = min(min_columns, n_row_columns)
         max_columns = max(max_columns, n_row_columns)
-    if headers is not None:
-        min_columns = min(min_columns, len(headers))
-        max_columns = max(max_columns, len(headers))
+    if labels is not None:
+        min_columns = min(min_columns, len(labels))
+        max_columns = max(max_columns, len(labels))
     if min_columns != max_columns:
         if missing_columns == 'error':
             raise Exception(
@@ -209,41 +209,41 @@ def _fix_missing_data(
             )
         elif missing_columns == 'clip':
             rows = [row[:min_columns] for row in rows]
-            if headers is not None:
-                headers = headers[:min_columns]
+            if labels is not None:
+                labels = labels[:min_columns]
         elif missing_columns == 'fill':
             rows = [
                 list(row) + [empty_str] * (max_columns - len(row))
                 for row in rows
             ]
-            if headers is not None:
-                headers = list(headers) + [''] * (max_columns - len(headers))
-    return rows, headers
+            if labels is not None:
+                labels = list(labels) + [''] * (max_columns - len(labels))
+    return rows, labels
 
 
 def _add_index(
     rows: list[typing.Sequence[typing.Any]],
-    headers: typing.Sequence[str] | None,
+    labels: typing.Sequence[str] | None,
     add_row_index: bool,
     row_start_index: int,
 ) -> tuple[list[typing.Sequence[typing.Any]], typing.Sequence[str] | None]:
     if add_row_index:
-        if headers is not None:
+        if labels is not None:
             if isinstance(add_row_index, str):
                 index_name = add_row_index
             else:
                 index_name = ''
-            headers = [index_name] + list(headers)
+            labels = [index_name] + list(labels)
         rows = [
             [str(row_start_index + r)] + list(row) for r, row in enumerate(rows)
         ]
 
-    return rows, headers
+    return rows, labels
 
 
 def _stringify_all(
     rows: typing.Sequence[typing.Sequence[typing.Any]],
-    headers: typing.Sequence[str] | None,
+    labels: typing.Sequence[str] | None,
     column_widths: typing.Sequence[int] | None,
     empty_str: str,
     format: FormatKwargs | None,
@@ -251,75 +251,75 @@ def _stringify_all(
     add_row_index: bool,
     justify: spec.HorizontalJustification,
     column_justify: ColumnData[spec.HorizontalJustification] | None,
-    header_justify: spec.HorizontalJustification
+    label_justify: spec.HorizontalJustification
     | ColumnData[spec.HorizontalJustification]
     | None,
-    header_vertical_justify: ColumnData[spec.VerticalJustification] | None,
+    label_vertical_justify: ColumnData[spec.VerticalJustification] | None,
     use_styles: bool | None,
     style: Style | None,
     column_style: ColumnData[Style] | None,
-    header_style: ColumnData[Style] | None,
+    label_style: ColumnData[Style] | None,
 ) -> tuple[list[list[str]], list[list[str]], typing.Sequence[int], bool]:
 
     # determine number of columns
     if len(rows) > 0:
         n_columns = len(rows[0])
-    elif headers is not None:
-        n_columns = len(headers)
+    elif labels is not None:
+        n_columns = len(labels)
     else:
         return [], [], [], False
 
     # convert cells to str
     column_format = _convert_column_dict_to_list(
-        column_format, n_columns, headers
+        column_format, n_columns, labels
     )
     str_cells = [
         _stringify_cells(row, format, column_format, empty_str) for row in rows
     ]
-    if headers is not None:
-        header_lines = multiline_tables._split_multiline_row(
-            headers,
-            vertical_justify=header_vertical_justify,
+    if labels is not None:
+        label_lines = multiline_tables._split_multiline_row(
+            labels,
+            vertical_justify=label_vertical_justify,
         )
-        str_headers = [
-            _stringify_cells(header_line, format, None, empty_str)
-            for header_line in header_lines
+        str_labels = [
+            _stringify_cells(label_line, format, None, empty_str)
+            for label_line in label_lines
         ]
     else:
-        str_headers = []
+        str_labels = []
 
     # determine column widths
     if column_widths is None:
-        column_widths = _get_column_widths(str_cells + str_headers)
+        column_widths = _get_column_widths(str_cells + str_labels)
 
     # trim and justify cells to column widths
     column_justify = _convert_column_dict_to_list(
-        column_justify, n_columns, headers
+        column_justify, n_columns, labels
     )
     str_cells = [
         _trim_justify(str_row, column_widths, column_justify, justify)
         for str_row in str_cells
     ]
-    if header_justify is None:
-        header_justify = 'right'
-    if isinstance(header_justify, list) and add_row_index:
-        header_justify = [header_justify[0]] + header_justify
-    header_justify = _convert_column_dict_to_list(
-        header_justify, n_columns, headers
+    if label_justify is None:
+        label_justify = 'right'
+    if isinstance(label_justify, list) and add_row_index:
+        label_justify = [label_justify[0]] + label_justify
+    label_justify = _convert_column_dict_to_list(
+        label_justify, n_columns, labels
     )
-    str_headers = [
-        _trim_justify(str_header, column_widths, header_justify, justify)
-        for str_header in str_headers
+    str_labels = [
+        _trim_justify(str_label, column_widths, label_justify, justify)
+        for str_label in str_labels
     ]
 
-    # add styles to rows and header
+    # add styles to rows and label
     if use_styles is None:
         use_styles = _should_use_styles(use_styles)
     if use_styles:
 
         # arrange column style specifications
         column_style = _convert_column_dict_to_list(
-            column_style, n_columns, headers
+            column_style, n_columns, labels
         )
 
         # style rows
@@ -328,31 +328,31 @@ def _stringify_all(
             str_rows=str_cells,
             style=style,
             column_style=column_style,
-            headers=headers,
-            str_headers=str_headers,
+            labels=labels,
+            str_labels=str_labels,
         )
 
-        # stylize header
-        if isinstance(header_style, list) and add_row_index:
-            header_style = [header_style[0]] + header_style
-        header_style = _convert_column_dict_to_list(
-            header_style, n_columns, headers
+        # stylize label
+        if isinstance(label_style, list) and add_row_index:
+            label_style = [label_style[0]] + label_style
+        label_style = _convert_column_dict_to_list(
+            label_style, n_columns, labels
         )
-        if isinstance(header_style, list) and len(header_style) != len(
-            str_headers[0]
+        if isinstance(label_style, list) and len(label_style) != len(
+            str_labels[0]
         ):
-            raise Exception('header_style has wrong length')
+            raise Exception('label_style has wrong length')
 
-        str_headers = _stylize_rows(
-            rows=str_headers,
-            str_rows=str_headers,
+        str_labels = _stylize_rows(
+            rows=str_labels,
+            str_rows=str_labels,
             style=None,
-            column_style=header_style,
-            headers=headers,
-            str_headers=str_headers,
+            column_style=label_style,
+            labels=labels,
+            str_labels=str_labels,
         )
 
-    return str_cells, str_headers, column_widths, use_styles
+    return str_cells, str_labels, column_widths, use_styles
 
 
 def _get_column_widths(str_cells: list[list[str]]) -> list[int]:
@@ -379,7 +379,7 @@ def _get_column_widths(str_cells: list[list[str]]) -> list[int]:
 def _convert_column_dict_to_list(
     column_data: None,
     n_columns: int,
-    headers: typing.Sequence[str] | None,
+    labels: typing.Sequence[str] | None,
 ) -> None:
     ...
 
@@ -388,7 +388,7 @@ def _convert_column_dict_to_list(
 def _convert_column_dict_to_list(
     column_data: ColumnData[T],
     n_columns: int,
-    headers: typing.Sequence[str] | None,
+    labels: typing.Sequence[str] | None,
 ) -> typing.Sequence[T | None]:
     ...
 
@@ -396,11 +396,11 @@ def _convert_column_dict_to_list(
 def _convert_column_dict_to_list(
     column_data: ColumnData[T] | None,
     n_columns: int,
-    headers: typing.Sequence[str] | None,
+    labels: typing.Sequence[str] | None,
 ) -> None | typing.Sequence[T | None]:
     """convert a dict of column data to a list of column data"""
 
-    if headers is not None and len(headers) != n_columns:
+    if labels is not None and len(labels) != n_columns:
         raise Exception('mismatching number of columns')
 
     if column_data is None:
@@ -419,9 +419,9 @@ def _convert_column_dict_to_list(
         if all(isinstance(item, int) for item in column_data.keys()):
             return [column_data.get(c) for c in range(n_columns)]
         elif all(isinstance(item, str) for item in column_data.keys()):
-            if headers is None:
-                raise Exception('must provide headers for named column data')
-            return [column_data.get(header) for header in headers]
+            if labels is None:
+                raise Exception('must provide labels for named column data')
+            return [column_data.get(label) for label in labels]
         else:
             raise Exception('unknown column data')
 
@@ -512,8 +512,8 @@ def _trim_justify(
 def _stylize_rows(
     rows: typing.Sequence[typing.Sequence[typing.Any]],
     str_rows: list[list[str]],
-    headers: typing.Sequence[typing.Any] | None,
-    str_headers: list[list[str]],
+    labels: typing.Sequence[typing.Any] | None,
+    str_labels: list[list[str]],
     style: Style | None,
     column_style: ColumnData[Style] | None,
 ) -> list[list[str]]:
@@ -539,8 +539,8 @@ def _stylize_rows(
                     'str_cell': str_cell,
                     'row': row,
                     'str_row': str_row,
-                    'labels': headers,
-                    'str_labels': str_headers,
+                    'labels': labels,
+                    'str_labels': str_labels,
                     'r': r,
                     'c': c,
                 }
@@ -560,35 +560,35 @@ def _stylize_rows(
     return stylized_rows
 
 
-def _process_header_location(
-    header_location: HeaderLocation | None,
+def _process_label_location(
+    label_location: HeaderLocation | None,
 ) -> tuple[bool, bool]:
 
-    if isinstance(header_location, str):
-        top_header = header_location == 'top'
-        bottom_header = header_location == 'bottom'
-    elif isinstance(header_location, (tuple, list)):
-        top_header = 'top' in header_location
-        bottom_header = 'bottom' in header_location
-    elif header_location is None:
-        top_header = True
-        bottom_header = False
+    if isinstance(label_location, str):
+        top_label = label_location == 'top'
+        bottom_label = label_location == 'bottom'
+    elif isinstance(label_location, (tuple, list)):
+        top_label = 'top' in label_location
+        bottom_label = 'bottom' in label_location
+    elif label_location is None:
+        top_label = True
+        bottom_label = False
     else:
-        raise Exception('unknown header_location format')
+        raise Exception('unknown label_location format')
 
-    return top_header, bottom_header
+    return top_label, bottom_label
 
 
 def _convert_table_to_str(
     str_cells: list[list[str]],
-    str_headers: list[list[str]],
+    str_labels: list[list[str]],
     column_widths: typing.Sequence[int],
-    compact: bool,
+    compact: bool | int,
     indent: str | int | None,
     max_table_width: int | None,
-    header_location: HeaderLocation | None,
+    label_location: HeaderLocation | None,
     border: str | spec.BorderChars | None,
-    header_border: str | spec.BorderChars | None,
+    label_border: str | spec.BorderChars | None,
     outer_border: bool | str | spec.BorderChars | None,
     column_gap: int | str | None,
     outer_gap: int | str | None,
@@ -611,29 +611,29 @@ def _convert_table_to_str(
     elif isinstance(border, str):
         border = outlines.get_border_chars_by_name(border)
 
-    # determine header border style
-    if header_border is None:
-        header_border = border
-    elif isinstance(header_border, str):
-        header_border = outlines.get_border_chars_by_name(header_border)
+    # determine label border style
+    if label_border is None:
+        label_border = border
+    elif isinstance(label_border, str):
+        label_border = outlines.get_border_chars_by_name(label_border)
 
     # determine outer border style
     if isinstance(outer_border, bool):
         if outer_border:
-            outer_border = header_border
+            outer_border = label_border
         else:
             outer_border = None
     if isinstance(outer_border, str):
         outer_border = outlines.get_border_chars_by_name(outer_border)
 
     # determine whether borders match
-    header_equals_inner = header_border['cross'] == border['cross']
+    label_equals_inner = label_border['cross'] == border['cross']
     if outer_border is not None:
         outer_equals_inner = outer_border['cross'] == border['cross']
-        header_equals_outer = header_border['cross'] == outer_border['cross']
+        label_equals_outer = label_border['cross'] == outer_border['cross']
     else:
         outer_equals_inner = True
-        header_equals_outer = True
+        label_equals_outer = True
 
     # determine gaps and delimiters
     if column_gap is None:
@@ -658,59 +658,59 @@ def _convert_table_to_str(
         outer_gap=outer_gap,
     )
 
-    # render header as strs
-    if len(str_headers) > 0:
+    # render label as strs
+    if len(str_labels) > 0:
 
-        # build header delimiter
-        if not header_equals_outer and not header_equals_inner:
-            header_vertical = ' '
+        # build label delimiter
+        if not label_equals_outer and not label_equals_inner:
+            label_vertical = ' '
         else:
-            header_vertical = header_border['vertical']
-        header_delimiter = column_gap + header_vertical + column_gap
+            label_vertical = label_border['vertical']
+        label_delimiter = column_gap + label_vertical + column_gap
 
-        # build header rows
-        formatted_headers = [
-            outer_gap + header_delimiter.join(str_header) + outer_gap
-            for str_header in str_headers
+        # build label rows
+        formatted_labels = [
+            outer_gap + label_delimiter.join(str_label) + outer_gap
+            for str_label in str_labels
         ]
 
-        # build top header row separator
-        if header_equals_inner:
-            header_cross: spec.BorderCharName = 'cross'
+        # build top label row separator
+        if label_equals_inner:
+            label_cross: spec.BorderCharName = 'cross'
         else:
-            if header_equals_outer:
-                header_cross = 'lower_t'
+            if label_equals_outer:
+                label_cross = 'lower_t'
             else:
-                header_cross = 'horizontal'
-        header_top_row_separator = _build_row_separator(
+                label_cross = 'horizontal'
+        label_top_row_separator = _build_row_separator(
             column_widths=column_widths,
-            border=header_border,
+            border=label_border,
             column_gap=column_gap,
             outer_gap=outer_gap,
-            cross_symbol=header_cross,
+            cross_symbol=label_cross,
         )
 
-        # build bottom header row separator
-        if header_equals_inner:
-            header_cross = 'cross'
+        # build bottom label row separator
+        if label_equals_inner:
+            label_cross = 'cross'
         else:
-            if header_equals_outer:
-                header_cross = 'upper_t'
+            if label_equals_outer:
+                label_cross = 'upper_t'
             else:
-                header_cross = 'horizontal'
-        header_bottom_row_separator = _build_row_separator(
+                label_cross = 'horizontal'
+        label_bottom_row_separator = _build_row_separator(
             column_widths=column_widths,
-            border=header_border,
+            border=label_border,
             column_gap=column_gap,
             outer_gap=outer_gap,
-            cross_symbol=header_cross,
+            cross_symbol=label_cross,
         )
 
-    # determine header positions
-    top_header = False
-    bottom_header = False
-    if len(str_headers) > 0:
-        top_header, bottom_header = _process_header_location(header_location)
+    # determine label positions
+    top_label = False
+    bottom_label = False
+    if len(str_labels) > 0:
+        top_label, bottom_label = _process_label_location(label_location)
 
     # add outer borders
     if outer_border is not None:
@@ -733,18 +733,18 @@ def _convert_table_to_str(
         # add outer border to row separator
         row_separator = outer_left_t + row_separator + outer_right_t
 
-        # add outer border to header rows
-        formatted_headers = [
-            outer_vertical + formatted_header + outer_vertical
-            for formatted_header in formatted_headers
+        # add outer border to label rows
+        formatted_labels = [
+            outer_vertical + formatted_label + outer_vertical
+            for formatted_label in formatted_labels
         ]
 
         # load more chars
         outer_horizontal = outer_border['horizontal']
 
         # create top outer border
-        if top_header:
-            top_interface = header_equals_outer
+        if top_label:
+            top_interface = label_equals_outer
         else:
             top_interface = outer_equals_inner
         if top_interface:
@@ -769,8 +769,8 @@ def _convert_table_to_str(
         )
 
         # create bottom outer border
-        if bottom_header:
-            bottom_interface = header_equals_outer
+        if bottom_label:
+            bottom_interface = label_equals_outer
         else:
             bottom_interface = outer_equals_inner
         if bottom_interface:
@@ -794,34 +794,34 @@ def _convert_table_to_str(
             + lower_right
         )
 
-        # add outer border to header row separator
-        if header_equals_outer:
+        # add outer border to label row separator
+        if label_equals_outer:
             outer_left_t = outer_border['left_t']
             outer_right_t = outer_border['right_t']
         else:
             outer_left_t = outer_border['vertical']
             outer_right_t = outer_border['vertical']
-        header_top_row_separator = (
-            outer_left_t + header_top_row_separator + outer_right_t
+        label_top_row_separator = (
+            outer_left_t + label_top_row_separator + outer_right_t
         )
-        header_bottom_row_separator = (
-            outer_left_t + header_bottom_row_separator + outer_right_t
+        label_bottom_row_separator = (
+            outer_left_t + label_bottom_row_separator + outer_right_t
         )
 
     # gather lines
     lines = []
-    if top_header:
-        for formatted_header in formatted_headers:
-            lines.append(formatted_header)
-        lines.append(header_top_row_separator)
+    if top_label:
+        for formatted_label in formatted_labels:
+            lines.append(formatted_label)
+        lines.append(label_top_row_separator)
     for r, formatted_row in enumerate(formatted_rows):
         lines.append(formatted_row)
         if r in separator_indices:
             lines.append(row_separator)
-    if bottom_header:
-        lines.append(header_bottom_row_separator)
-        for formatted_header in formatted_headers:
-            lines.append(formatted_header)
+    if bottom_label:
+        lines.append(label_bottom_row_separator)
+        for formatted_label in formatted_labels:
+            lines.append(formatted_label)
     if outer_border is not None:
         lines = [top_border] + lines + [bottom_border]
 
