@@ -293,6 +293,8 @@ def _stringify_all(
         column_widths = _get_column_widths(str_cells + str_labels)
 
     # trim and justify cells to column widths
+    if isinstance(column_justify, list) and add_row_index:
+        column_justify = [column_justify[0]] + column_justify
     column_justify = _convert_column_dict_to_list(
         column_justify, n_columns, labels
     )
