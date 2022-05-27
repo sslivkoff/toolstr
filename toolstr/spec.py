@@ -72,7 +72,7 @@ sample_mode_size = {
     'braille': (4, 2),
 }
 
-GridCharDict = dict[tuple[tuple[int, ...], ...], str]
+GridCharDict = typing.Dict[typing.Tuple[typing.Tuple[int, ...], ...], str]
 
 
 class Grid(TypedDict):
