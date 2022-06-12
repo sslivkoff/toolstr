@@ -193,31 +193,34 @@ def _fix_missing_data(
     missing_columns: typing.Literal['clip', 'fill', 'error'],
     empty_str: str,
 ) -> tuple[list[typing.Sequence[typing.Any]], typing.Sequence[str] | None]:
-    min_columns = 1_000_000_000
-    max_columns = 0
-    for row in rows:
-        n_row_columns = len(row)
-        min_columns = min(min_columns, n_row_columns)
-        max_columns = max(max_columns, n_row_columns)
-    if labels is not None:
-        min_columns = min(min_columns, len(labels))
-        max_columns = max(max_columns, len(labels))
-    if min_columns != max_columns:
-        if missing_columns == 'error':
-            raise Exception(
-                'different numbers of columns, use missing_columns="clip" or missing_columns="fill"'
-            )
-        elif missing_columns == 'clip':
-            rows = [row[:min_columns] for row in rows]
-            if labels is not None:
-                labels = labels[:min_columns]
-        elif missing_columns == 'fill':
-            rows = [
-                list(row) + [empty_str] * (max_columns - len(row))
-                for row in rows
-            ]
-            if labels is not None:
-                labels = list(labels) + [''] * (max_columns - len(labels))
+
+    if len(rows) > 0:
+        min_columns = 1_000_000_000
+        max_columns = 0
+        for row in rows:
+            n_row_columns = len(row)
+            min_columns = min(min_columns, n_row_columns)
+            max_columns = max(max_columns, n_row_columns)
+        if labels is not None:
+            min_columns = min(min_columns, len(labels))
+            max_columns = max(max_columns, len(labels))
+        if min_columns != max_columns:
+            if missing_columns == 'error':
+                raise Exception(
+                    'different numbers of columns, use missing_columns="clip" or missing_columns="fill"'
+                )
+            elif missing_columns == 'clip':
+                rows = [row[:min_columns] for row in rows]
+                if labels is not None:
+                    labels = labels[:min_columns]
+            elif missing_columns == 'fill':
+                rows = [
+                    list(row) + [empty_str] * (max_columns - len(row))
+                    for row in rows
+                ]
+                if labels is not None:
+                    labels = list(labels) + [''] * (max_columns - len(labels))
+
     return rows, labels
 
 
