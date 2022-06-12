@@ -116,7 +116,7 @@ def format_timestamp(
 
     converted: typing.Any = tooltime.convert_timestamp(
         timestamp,
-        to_representation=representation,  # type: ignore
+        to_representation=representation,
         **kwargs,
     )
     if isinstance(converted, str):
