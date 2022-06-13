@@ -7,7 +7,7 @@ from . import table_utils
 
 
 def print_multiline_table(
-    rows: list[typing.Sequence[typing.Any]],
+    rows: typing.Sequence[typing.Sequence[typing.Any]],
     labels: typing.Sequence[str] | None = None,
     row_height: int | None = None,
     row_heights: typing.Sequence[int] | None = None,
@@ -26,7 +26,7 @@ def print_multiline_table(
 
     # add row index
     rows, labels = table_utils._add_index(
-        rows, labels, add_row_index, row_start_index
+        list(rows), labels, add_row_index, row_start_index
     )
 
     # determine height of each row
