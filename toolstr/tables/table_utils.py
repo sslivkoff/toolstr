@@ -517,10 +517,17 @@ def _trim_justify(
     for c, cell in enumerate(str_row):
         length = len(cell)
         width = column_widths[c]
-        if length >= width:
+        if length == width:
+            output.append(cell)
+        elif length > width:
 
             # trim
-            output.append(cell[:width])
+
+            if width >= 3:
+                trimmed = cell[:width - 3] + '...'
+            else:
+                trimmed = '.' * width
+            output.append(trimmed)
 
         else:
 
