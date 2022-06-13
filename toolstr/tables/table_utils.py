@@ -638,7 +638,7 @@ def _convert_table_to_str(
             column_gap = ''
         border = outlines.get_border_chars()
         border['vertical'] = ' ' * int(compact)
-        border['cross'] = border['horizontal']
+        border['cross'] = border['horizontal'] * int(compact)
 
     # determine border styles
     if border is None:
