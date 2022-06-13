@@ -65,6 +65,7 @@ def print_table(
     label_location: HeaderLocation | None = None,
     max_table_width: int | None = None,
     column_widths: typing.Sequence[int] | None = None,
+    max_column_widths: ColumnData[int] | None = None,
     indent: str | int | None = None,
     outer_gap: int | str | None = None,
     column_gap: int | str | None = None,
@@ -99,6 +100,7 @@ def print_table(
         rows=rows,
         labels=labels,
         column_widths=column_widths,
+        max_column_widths=max_column_widths,
         format=format,
         column_format=column_format,
         empty_str=empty_str,
@@ -248,6 +250,7 @@ def _stringify_all(
     rows: typing.Sequence[typing.Sequence[typing.Any]],
     labels: typing.Sequence[str] | None,
     column_widths: typing.Sequence[int] | None,
+    max_column_widths: ColumnData[int] | None,
     empty_str: str,
     format: FormatKwargs | None,
     column_format: ColumnData[FormatKwargs] | None,
@@ -293,7 +296,14 @@ def _stringify_all(
 
     # determine column widths
     if column_widths is None:
-        column_widths = _get_column_widths(str_cells + str_labels)
+        if isinstance(max_column_widths, list) and add_row_index:
+            max_column_widths = [max_column_widths[0]] + max_column_widths
+        max_column_widths = _convert_column_dict_to_list(
+            max_column_widths, n_columns, labels
+        )
+        column_widths = _get_column_widths(
+            str_cells + str_labels, max_column_widths
+        )
 
     # trim and justify cells to column widths
     if isinstance(column_justify, list) and add_row_index:
@@ -360,24 +370,37 @@ def _stringify_all(
     return str_cells, str_labels, column_widths, use_styles
 
 
-def _get_column_widths(str_cells: list[list[str]]) -> list[int]:
+def _get_column_widths(
+    str_cells: list[list[str]],
+    max_column_widths: typing.Sequence[int | None] | None,
+) -> list[int]:
+
     if len(str_cells) > 0:
         n_columns = len(str_cells[0])
     else:
         return []
-    max_column_widths: list[int] = [0] * n_columns
+    column_widths: list[int] = [0] * n_columns
     for row_str_cells in str_cells:
         for c, str_cell in enumerate(row_str_cells):
+
             if '[' in str_cell:
                 import rich.text
 
                 cell_width = rich.text.Text.from_markup(str_cell).cell_len
             else:
                 cell_width = len(str_cell)
-            if cell_width > max_column_widths[c]:
-                max_column_widths[c] = cell_width
+            if cell_width > column_widths[c]:
+                column_widths[c] = cell_width
 
-    return max_column_widths
+    if max_column_widths is not None:
+        for c, max_column_width in enumerate(max_column_widths):
+            if (
+                max_column_width is not None
+                and column_widths[c] > max_column_width
+            ):
+                column_widths[c] = max_column_width
+
+    return column_widths
 
 
 @typing.overload
