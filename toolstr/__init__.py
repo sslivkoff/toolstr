@@ -2,7 +2,7 @@
 
 from .blocks import *
 from .charts import *
-from .formatting import *
+from .formats import *
 from .indents import *
 from .outlines import *
 from .spec import *

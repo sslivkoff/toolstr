@@ -5,7 +5,7 @@ import typing
 if typing.TYPE_CHECKING:
     import tooltime
 
-from . import spec
+from .. import spec
 
 
 def hjustify(

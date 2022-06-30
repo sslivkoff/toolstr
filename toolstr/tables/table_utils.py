@@ -4,7 +4,7 @@ import typing
 import types
 from typing_extensions import TypedDict
 
-from .. import formatting
+from .. import formats
 from .. import outlines
 from .. import spec
 from . import multiline_tables
@@ -486,9 +486,9 @@ def _stringify_cells(
 
                 # format as str
                 if cell_format is not None:
-                    as_str = formatting.format(cell, **cell_format)
+                    as_str = formats.format(cell, **cell_format)
                 else:
-                    as_str = formatting.format(cell)
+                    as_str = formats.format(cell)
 
             else:
                 as_str = str(cell)
@@ -539,7 +539,7 @@ def _trim_justify(
                 cell_justify = justify
 
             # justify
-            output.append(formatting.hjustify(cell, cell_justify, width))
+            output.append(formats.hjustify(cell, cell_justify, width))
 
     return output
 
