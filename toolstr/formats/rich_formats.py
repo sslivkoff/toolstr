@@ -7,8 +7,11 @@ def print(
     *text: str, style: typing.Optional[str] = None, **rich_kwargs: typing.Any
 ) -> None:
     import rich.console
+    import rich.theme
 
-    console = rich.console.Console()
+    console = rich.console.Console(
+        theme=rich.theme.Theme(inherit=False),
+    )
     console.print(*text, style=style, **rich_kwargs)
 
 
