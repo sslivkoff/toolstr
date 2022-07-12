@@ -3,6 +3,7 @@ from __future__ import annotations
 import typing
 from typing_extensions import TypedDict
 
+from . import formats
 from . import spec
 
 
@@ -321,6 +322,7 @@ def get_outlined_text(
     lower_pad: typing.Optional[int] = None,
     left_pad: typing.Optional[int] = None,
     right_pad: typing.Optional[int] = None,
+    style: str | None = None,
     **border_style: typing.Any,
 ) -> str:
 
@@ -429,6 +431,9 @@ def get_outlined_text(
 
     outlined = outlined.rstrip()
 
+    if style is not None:
+        outlined = formats.add_style(outlined, style)
+
     return outlined
 
 
@@ -445,6 +450,7 @@ def print_outlined_text(
     lower_pad: typing.Optional[int] = None,
     left_pad: typing.Optional[int] = None,
     right_pad: typing.Optional[int] = None,
+    style: str | None = None,
     **border_style: typing.Any,
 ) -> None:
     string = get_outlined_text(
@@ -460,9 +466,13 @@ def print_outlined_text(
         lower_pad=lower_pad,
         left_pad=left_pad,
         right_pad=right_pad,
+        style=style,
         **border_style,
     )
-    print(string)
+    if style is not None:
+        formats.print(string)
+    else:
+        print(string)
 
 
 def print_text_box(
@@ -473,6 +483,7 @@ def print_text_box(
     lower_pad: int = 0,
     left_pad: int = 1,
     right_pad: int = 1,
+    style: str | None = None,
     **border_style: typing.Any,
 ) -> None:
     print_outlined_text(
@@ -487,6 +498,7 @@ def print_text_box(
         lower_pad=lower_pad,
         left_pad=left_pad,
         right_pad=right_pad,
+        style=style,
         **border_style,
     )
 
@@ -496,6 +508,7 @@ def print_header(
     width: typing.Optional[int] = None,
     justify: typing.Optional[spec.HorizontalJustification] = None,
     pad: int = 0,
+    style: str | None = None,
     **border_style: typing.Any,
 ) -> None:
     print_outlined_text(
@@ -507,5 +520,6 @@ def print_header(
         lower_border=True,
         left_border=False,
         right_border=False,
+        style=style,
         **border_style,
     )
