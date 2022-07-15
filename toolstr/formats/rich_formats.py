@@ -15,5 +15,8 @@ def print(
     console.print(*text, style=style, **rich_kwargs)
 
 
-def add_style(text: str, style: str) -> str:
-    return '[' + style + ']' + text + '[/' + style + ']'
+def add_style(text: str, style: str | None) -> str:
+    if style is None:
+        return text
+    else:
+        return '[' + style + ']' + text + '[/' + style + ']'
