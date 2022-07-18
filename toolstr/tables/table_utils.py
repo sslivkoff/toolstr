@@ -636,7 +636,13 @@ def _convert_table_to_str(
             outer_gap = ''
         if column_gap is None:
             column_gap = ''
-        border = outlines.get_border_chars()
+
+        if isinstance(border, str):
+            border = outlines.get_border_chars_by_name(border)
+        elif border is None:
+            border = outlines.get_border_chars()
+        else:
+            raise Exception('bad format for compact border: ' + str(border))
         border['vertical'] = ' ' * int(compact)
         border['cross'] = border['horizontal'] * int(compact)
 
