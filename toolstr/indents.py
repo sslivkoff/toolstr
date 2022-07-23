@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import typing
 
 
@@ -21,4 +23,3 @@ def indent_to_str(indent: typing.Union[str, int, None]) -> str:
         return indent
     else:
         raise Exception('unknown indent format')
-
