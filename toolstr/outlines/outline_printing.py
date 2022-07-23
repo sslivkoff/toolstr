@@ -22,6 +22,7 @@ def print_outlined_text(
     left_pad: typing.Optional[int] = None,
     right_pad: typing.Optional[int] = None,
     style: str | None = None,
+    indent: str | int | None = None,
     **border_style: typing.Any,
 ) -> None:
 
@@ -42,6 +43,8 @@ def print_outlined_text(
         **border_style,
     )
 
+    if indent is not None:
+        string = indents.indent_block(block=string, indent=indent)
 
     if style is not None:
         formats.print(string)
