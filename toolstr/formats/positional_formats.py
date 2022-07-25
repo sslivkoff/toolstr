@@ -14,6 +14,13 @@ def hjustify(
     width: int,
 ) -> str:
 
+    # account for rich formatting
+    if '[' in text:
+        import rich.text
+
+        plain_width = rich.text.Text.from_markup(text).cell_len
+        width += len(text) - plain_width
+
     if width < len(text):
         return text[:width]
 
