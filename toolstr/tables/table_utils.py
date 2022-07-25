@@ -510,12 +510,16 @@ def _trim_justify(
 ) -> list[str]:
     """trim or justify cells in row to target sizes"""
 
+    import rich.text
+
     if column_justify is not None and len(column_justify) != len(str_row):
         raise Exception('wrong length of list')
 
     output = []
     for c, cell in enumerate(str_row):
-        length = len(cell)
+        rich_cell = rich.text.Text.from_markup(cell)
+        length = len(rich_cell.plain)
+
         width = column_widths[c]
         if length == width:
             output.append(cell)
@@ -524,7 +528,7 @@ def _trim_justify(
             # trim
 
             if width >= 3:
-                trimmed = cell[:width - 3] + '...'
+                trimmed = rich_cell.fit(width - 3)[0].markup + '...'
             else:
                 trimmed = '.' * width
             output.append(trimmed)
@@ -629,6 +633,8 @@ def _convert_table_to_str(
     outer_gap: int | str | None,
     separator_indices: set[int],
 ) -> str:
+
+    import rich.text
 
     # use compact format
     if compact:
@@ -877,11 +883,14 @@ def _convert_table_to_str(
         ellipses = True
         trimmed_lines = []
         for line in lines:
-            if len(line) > max_table_width:
+            rich_line = rich.text.Text.from_markup(line)
+            line_len = rich_line.cell_len
+            if line_len > max_table_width:
                 if ellipses:
-                    line = line[: max_table_width - 3] + '...'
+                    line = rich_line.fit(max_table_width - 3)[0].markup + '...'
                 else:
-                    line = line[:max_table_width]
+                    line = rich_line.fit(max_table_width)[0].markup
+
             trimmed_lines.append(line)
         lines = trimmed_lines
 
