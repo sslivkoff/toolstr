@@ -4,7 +4,7 @@ import typing
 
 
 def print(
-    *text: str, style: typing.Optional[str] = None, **rich_kwargs: typing.Any
+    *text: typing.Any, style: typing.Optional[str] = None, **rich_kwargs: typing.Any
 ) -> None:
     import rich.console
     import rich.theme
