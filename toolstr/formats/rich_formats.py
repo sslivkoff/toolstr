@@ -15,7 +15,7 @@ def print(
     import rich.theme
 
     if indent is not None:
-        text = [indents.indent_block(str(text[0]), indent=indent)] + list(
+        text = (indents.indent_block(str(text[0]), indent=indent),) + tuple(
             text[1:]
         )
 

@@ -217,3 +217,41 @@ def raster_bar_chart(
             )
 
     return raster
+
+
+def rasterize_line_plot(
+    xvals: typing.Sequence[int | float],
+    yvals: typing.Sequence[int | float],
+    grid: spec.Grid,
+) -> spec.Raster:
+
+    n = len(xvals)
+    assert n == len(yvals)
+
+    raster = create_blank_raster(grid)
+
+    for i0, i1 in zip(range(n - 1), range(1, n)):
+
+        x0 = xvals[i0]
+        x1 = xvals[i1]
+        y0 = yvals[i0]
+        y1 = yvals[i1]
+
+        if x0 is None or x1 is None or y0 is None or y1 is None:
+            continue
+
+        r0 = grid_utils.get_row(y0, grid)
+        r1 = grid_utils.get_row(y1, grid)
+        c0 = grid_utils.get_column(x0, grid)
+        c1 = grid_utils.get_column(x1, grid)
+
+        rows, columns = line_utils.draw_line(
+            r0,
+            c0,
+            r1,
+            c1,
+        )
+        mask = (rows >= 0) * (columns >= 0)  # type: ignore
+        raster[rows[mask], columns[mask]] = 1
+
+    return raster

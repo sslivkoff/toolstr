@@ -99,3 +99,18 @@ def get_row(
 
         return np.searchsorted(row_borders, yval) - 1  # type: ignore
 
+
+def get_column(
+    xval: typing.Union[typing.SupportsInt, typing.SupportsFloat],
+    grid: spec.Grid,
+) -> int:
+    column_borders = get_column_borders(grid)
+    if xval < column_borders[0]:
+        return -1
+    elif xval > column_borders[-1]:
+        return grid['n_columns']
+    else:
+        import numpy as np
+
+        return np.searchsorted(column_borders, xval) - 1  # type: ignore
+
