@@ -225,6 +225,19 @@ def rasterize_line_plot(
     grid: spec.Grid,
 ) -> spec.Raster:
 
+    import numpy as np
+
+    # remove None values
+    xvals = np.array(xvals, dtype=float)  # type: ignore
+    yvals = np.array(yvals, dtype=float)  # type: ignore
+    nan_mask = np.isnan(xvals) + np.isnan(yvals)
+    non_nan_mask = ~nan_mask
+    xvals = xvals[non_nan_mask]
+    yvals = yvals[non_nan_mask]
+
+    data_rows = grid_utils.get_rows(yvals=yvals, grid=grid)
+    data_columns = grid_utils.get_columns(xvals=xvals, grid=grid)
+
     n = len(xvals)
     assert n == len(yvals)
 
@@ -232,18 +245,10 @@ def rasterize_line_plot(
 
     for i0, i1 in zip(range(n - 1), range(1, n)):
 
-        x0 = xvals[i0]
-        x1 = xvals[i1]
-        y0 = yvals[i0]
-        y1 = yvals[i1]
-
-        if x0 is None or x1 is None or y0 is None or y1 is None:
-            continue
-
-        r0 = grid_utils.get_row(y0, grid)
-        r1 = grid_utils.get_row(y1, grid)
-        c0 = grid_utils.get_column(x0, grid)
-        c1 = grid_utils.get_column(x1, grid)
+        r0 = data_rows[i0]
+        r1 = data_rows[i1]
+        c0 = data_columns[i0]
+        c1 = data_columns[i1]
 
         rows, columns = line_utils.draw_line(
             r0,
@@ -252,6 +257,7 @@ def rasterize_line_plot(
             c1,
         )
         mask = (rows >= 0) * (columns >= 0)  # type: ignore
+        mask = mask * (rows < grid['n_rows']) * (columns < grid['n_columns'])  # type: ignore
         raster[rows[mask], columns[mask]] = 1
 
     return raster

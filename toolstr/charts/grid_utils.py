@@ -64,7 +64,9 @@ def get_column_delta(grid: spec.Grid) -> float:
     return (grid['xmax'] - grid['xmin']) / grid['n_columns']
 
 
-def get_cell_borders(row: int, column: int, grid: spec.Grid) -> tuple[float, float, float, float]:
+def get_cell_borders(
+    row: int, column: int, grid: spec.Grid
+) -> tuple[float, float, float, float]:
     row_delta = get_row_delta(grid)
     column_delta = get_column_delta(grid)
     return (
@@ -114,3 +116,26 @@ def get_column(
 
         return np.searchsorted(column_borders, xval) - 1  # type: ignore
 
+
+def get_rows(
+    yvals: typing.Sequence[typing.SupportsInt | typing.SupportsFloat],
+    grid: spec.Grid,
+) -> typing.Sequence[int]:
+
+    import numpy as np
+
+    row_borders = get_row_borders(grid)
+    plural_results: typing.Sequence[int] = np.searchsorted(row_borders, yvals) - 1  # type: ignore
+    return plural_results
+
+
+def get_columns(
+    xvals: typing.Sequence[typing.SupportsInt | typing.SupportsFloat],
+    grid: spec.Grid,
+) -> typing.Sequence[int]:
+
+    import numpy as np
+
+    column_borders = get_column_borders(grid)
+    plural_results: typing.Sequence[int] = np.searchsorted(column_borders, xvals) - 1  # type: ignore
+    return plural_results
