@@ -71,6 +71,7 @@ def render_y_axis(
     label_gap: int = 0,
     chrome_style: str | None = None,
     tick_label_style: str | None = None,
+    label_prefix: str | None = None,
 ) -> str:
 
     import numpy as np
@@ -87,7 +88,18 @@ def render_y_axis(
         if abs(row_center) < 1e-10:
             row_center = 0
 
-        label = toolstr.format(row_center, order_of_magnitude=True)
+        if row_center < 1000:
+            decimals = 2
+        else:
+            decimals = 1
+
+        label = toolstr.format(
+            row_center,
+            decimals=decimals,
+            trailing_zeros=True,
+            order_of_magnitude=True,
+            prefix=label_prefix,
+        )
         label = label[:label_width]
         label = label.rjust(label_width)
 
@@ -194,10 +206,7 @@ def render_x_axis(
             )
 
     if chrome_style is not None:
-        rows = [
-            formats.add_style(row, chrome_style)
-            for row in rows
-        ]
+        rows = [formats.add_style(row, chrome_style) for row in rows]
     if tick_label_style is not None:
         labels = formats.add_style(labels, tick_label_style)
 

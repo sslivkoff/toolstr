@@ -25,6 +25,7 @@ def render_line_plot(
     line_style: str | None = None,
     chrome_style: str | None = None,
     tick_label_style: str | None = None,
+    yaxis_kwargs: typing.Mapping[typing.Any, typing.Any] | None = None,
 ) -> str:
 
     non_none_xvals = [xval for xval in xvals if xval is not None]
@@ -75,12 +76,15 @@ def render_line_plot(
         ]
         plot = '\n'.join(new_lines)
 
-    y_axis_width = 8
+    y_axis_width = 9
+    if yaxis_kwargs is None:
+        yaxis_kwargs = {}
     y_axis = render_utils.render_y_axis(
         grid=render_grid,
         width=y_axis_width,
         chrome_style=chrome_style,
         tick_label_style=tick_label_style,
+        **yaxis_kwargs
     )
 
     graph = blocks.concatenate_blocks([y_axis, plot])
