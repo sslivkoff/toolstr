@@ -22,6 +22,9 @@ def render_line_plot(
     yvals: typing.Sequence[int | float],
     n_rows: int,
     n_columns: int,
+    line_style: str | None = None,
+    chrome_style: str | None = None,
+    tick_label_style: str | None = None,
 ) -> str:
 
     non_none_xvals = [xval for xval in xvals if xval is not None]
@@ -65,12 +68,21 @@ def render_line_plot(
         columns_per_cell=columns_per_cell,
         char_dict=char_dict,
     )
+    if line_style is not None:
+        new_lines = [
+            formats.add_style(line, line_style)
+            for line in plot.split('\n')
+        ]
+        plot = '\n'.join(new_lines)
 
+    y_axis_width = 8
     y_axis = render_utils.render_y_axis(
         grid=render_grid,
+        width=y_axis_width,
+        chrome_style=chrome_style,
+        tick_label_style=tick_label_style,
     )
 
-    y_axis_width = len(y_axis.split('\n')[0])
     graph = blocks.concatenate_blocks([y_axis, plot])
 
     formatter = functools.partial(
@@ -80,6 +92,8 @@ def render_line_plot(
     x_axis = render_utils.render_x_axis(
         grid=render_grid,
         formatter=formatter,
+        chrome_style=chrome_style,
+        tick_label_style=tick_label_style,
     )
     x_axis = indents.indent_block(x_axis, indent=y_axis_width)
 

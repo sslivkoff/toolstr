@@ -7,6 +7,7 @@ if typing.TYPE_CHECKING:
 
 import toolstr
 
+from .. import formats
 from .. import spec
 from . import char_dicts
 from . import grid_utils
@@ -68,6 +69,8 @@ def render_y_axis(
     n_ticks: int = 4,
     tick_length: int = 2,
     label_gap: int = 0,
+    chrome_style: str | None = None,
+    tick_label_style: str | None = None,
 ) -> str:
 
     import numpy as np
@@ -102,7 +105,12 @@ def render_y_axis(
             tick_body = ' '
             label = ' ' * label_width
 
-        row = label + ' ' * label_gap + tick_body * (tick_length - 1) + tick
+        if tick_label_style is not None:
+            label = formats.add_style(label, tick_label_style)
+        tick_form = tick_body * (tick_length - 1) + tick
+        if chrome_style is not None:
+            tick_form = formats.add_style(tick_form, chrome_style)
+        row = label + ' ' * label_gap + tick_form
         rows.append(row)
 
     rows = rows[::-1]
@@ -116,6 +124,8 @@ def render_x_axis(
     tick_length: int = 2,
     include_label_gap: bool = False,
     formatter: typing.Callable[[typing.Any], str] | None = None,
+    chrome_style: str | None = None,
+    tick_label_style: str | None = None,
 ) -> str:
 
     import numpy as np
@@ -182,6 +192,14 @@ def render_x_axis(
                 + label
                 + labels[label_start + len(label) :]
             )
+
+    if chrome_style is not None:
+        rows = [
+            formats.add_style(row, chrome_style)
+            for row in rows
+        ]
+    if tick_label_style is not None:
+        labels = formats.add_style(labels, tick_label_style)
 
     rows.append(labels)
 
