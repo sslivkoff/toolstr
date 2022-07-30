@@ -88,8 +88,13 @@ def render_y_axis(
         if abs(row_center) < 1e-10:
             row_center = 0
 
-        if row_center < 1000:
-            decimals = 2
+        order_of_magnitude = True
+        if row_center < 0.01:
+            order_of_magnitude = False
+            decimals = 30
+        elif row_center < 1000:
+            order_of_magnitude = False
+            decimals = 3
         else:
             decimals = 1
 
@@ -97,7 +102,7 @@ def render_y_axis(
             row_center,
             decimals=decimals,
             trailing_zeros=True,
-            order_of_magnitude=True,
+            order_of_magnitude=order_of_magnitude,
             prefix=label_prefix,
         )
         label = label[:label_width]
