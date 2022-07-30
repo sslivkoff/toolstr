@@ -44,7 +44,7 @@ def render_line_plot(
         n_columns=n_columns,
         xmin=xmin - 0.0 * xrange,
         xmax=xmax + 0.0 * xrange,
-        ymin=0,
+        ymin=ymin - 0.1 * yrange,
         ymax=ymax + 0.1 * yrange,
     )
 
@@ -53,7 +53,7 @@ def render_line_plot(
         n_columns=int(n_columns / columns_per_cell),
         xmin=xmin - 0.0 * xrange,
         xmax=xmax + 0.0 * xrange,
-        ymin=0,
+        ymin=ymin - 0.1 * yrange,
         ymax=ymax + 0.1 * yrange,
     )
 
