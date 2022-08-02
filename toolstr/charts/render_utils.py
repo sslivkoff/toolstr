@@ -72,6 +72,7 @@ def render_y_axis(
     chrome_style: str | None = None,
     tick_label_style: str | None = None,
     label_prefix: str | None = None,
+    label_postfix: str | None = None,
 ) -> str:
 
     import numpy as np
@@ -104,6 +105,7 @@ def render_y_axis(
             trailing_zeros=True,
             order_of_magnitude=order_of_magnitude,
             prefix=label_prefix,
+            postfix=label_postfix,
         )
         label = label[:label_width]
         label = label.rjust(label_width)
