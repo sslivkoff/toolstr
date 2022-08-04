@@ -82,7 +82,7 @@ def print_table(
     label_vertical_justify: ColumnData[spec.VerticalJustification]
     | None = 'bottom',
     style: Style | None = None,
-    column_style: ColumnData[Style] | None = None,
+    column_styles: ColumnData[Style] | None = None,
     label_style: ColumnData[Style] | None = None,
 ) -> str | None:
 
@@ -109,7 +109,7 @@ def print_table(
         label_justify=label_justify,
         label_vertical_justify=label_vertical_justify,
         style=style,
-        column_style=column_style,
+        column_styles=column_styles,
         label_style=label_style,
         use_styles=use_styles,
         add_row_index=add_row_index,
@@ -263,7 +263,7 @@ def _stringify_all(
     label_vertical_justify: ColumnData[spec.VerticalJustification] | None,
     use_styles: bool | None,
     style: Style | None,
-    column_style: ColumnData[Style] | None,
+    column_styles: ColumnData[Style] | None,
     label_style: ColumnData[Style] | None,
 ) -> tuple[list[list[str]], list[list[str]], typing.Sequence[int], bool]:
 
@@ -333,8 +333,8 @@ def _stringify_all(
     if use_styles:
 
         # arrange column style specifications
-        column_style = _convert_column_dict_to_list(
-            column_style, n_columns, labels
+        column_styles = _convert_column_dict_to_list(
+            column_styles, n_columns, labels
         )
 
         # style rows
@@ -342,7 +342,7 @@ def _stringify_all(
             rows=rows,
             str_rows=str_cells,
             style=style,
-            column_style=column_style,
+            column_styles=column_styles,
             labels=labels,
             str_labels=str_labels,
         )
@@ -362,7 +362,7 @@ def _stringify_all(
             rows=str_labels,
             str_rows=str_labels,
             style=None,
-            column_style=label_style,
+            column_styles=label_style,
             labels=labels,
             str_labels=str_labels,
         )
@@ -554,7 +554,7 @@ def _stylize_rows(
     labels: typing.Sequence[typing.Any] | None,
     str_labels: list[list[str]],
     style: Style | None,
-    column_style: ColumnData[Style] | None,
+    column_styles: ColumnData[Style] | None,
 ) -> list[list[str]]:
 
     stylized_rows = []
@@ -564,8 +564,8 @@ def _stylize_rows(
         for c, (cell, str_cell) in enumerate(zip(row, str_row)):
 
             # use column style if specified, otherwise use global style
-            if column_style is not None and column_style[c] is not None:
-                cell_style: Style | None = column_style[c]
+            if column_styles is not None and column_styles[c] is not None:
+                cell_style: Style | None = column_styles[c]
             elif style is not None:
                 cell_style = style
             else:
