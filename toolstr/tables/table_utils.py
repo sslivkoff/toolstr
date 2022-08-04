@@ -53,7 +53,7 @@ def print_table(
     missing_columns: typing.Literal['fill', 'clip', 'error'] = 'error',
     empty_str: str = '',
     format: FormatKwargs | None = None,
-    column_format: ColumnData[FormatKwargs] | None = None,
+    column_formats: ColumnData[FormatKwargs] | None = None,
     return_str: bool = False,
     #
     # io
@@ -102,7 +102,7 @@ def print_table(
         column_widths=column_widths,
         max_column_widths=max_column_widths,
         format=format,
-        column_format=column_format,
+        column_formats=column_formats,
         empty_str=empty_str,
         justify=justify,
         column_justify=column_justify,
@@ -253,7 +253,7 @@ def _stringify_all(
     max_column_widths: ColumnData[int] | None,
     empty_str: str,
     format: FormatKwargs | None,
-    column_format: ColumnData[FormatKwargs] | None,
+    column_formats: ColumnData[FormatKwargs] | None,
     add_row_index: bool,
     justify: spec.HorizontalJustification,
     column_justify: ColumnData[spec.HorizontalJustification] | None,
@@ -276,11 +276,11 @@ def _stringify_all(
         return [], [], [], False
 
     # convert cells to str
-    column_format = _convert_column_dict_to_list(
-        column_format, n_columns, labels
+    column_formats = _convert_column_dict_to_list(
+        column_formats, n_columns, labels
     )
     str_cells = [
-        _stringify_cells(row, format, column_format, empty_str) for row in rows
+        _stringify_cells(row, format, column_formats, empty_str) for row in rows
     ]
     if labels is not None:
         label_lines = multiline_tables._split_multiline_row(
@@ -460,7 +460,7 @@ def _convert_column_dict_to_list(
 def _stringify_cells(
     row: typing.Sequence[typing.Any],
     format: FormatKwargs | None,
-    column_format: typing.Sequence[None | typing.Mapping[str, typing.Any]]
+    column_formats: typing.Sequence[None | typing.Mapping[str, typing.Any]]
     | None,
     empty_str: str,
 ) -> list[str]:
@@ -479,8 +479,8 @@ def _stringify_cells(
                 # get format kwargs
                 cell_format: typing.Mapping[str, typing.Any] | None
                 cell_format = None
-                if column_format is not None:
-                    cell_format = column_format[c]
+                if column_formats is not None:
+                    cell_format = column_formats[c]
                 if format is not None and cell_format is None:
                     cell_format = format
 
