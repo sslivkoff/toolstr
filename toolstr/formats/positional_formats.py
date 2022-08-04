@@ -30,6 +30,8 @@ def hjustify(
         return text.rjust(width)
     elif justification == 'center':
         return text.center(width)
+    elif justification == 'raw':
+        return text[:width].ljust(width)
     else:
         raise Exception('unknown justification: ' + str(justification))
 

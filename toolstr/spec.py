@@ -22,7 +22,7 @@ if typing.TYPE_CHECKING:
         oom_blank: str
 
 
-HorizontalJustification = Literal['left', 'right', 'center']
+HorizontalJustification = Literal['left', 'right', 'center', 'raw']
 VerticalJustification = Literal['top', 'bottom', 'center']
 
 
