@@ -25,6 +25,7 @@ def render_line_plot(
     line_style: str | None = None,
     chrome_style: str | None = None,
     tick_label_style: str | None = None,
+    xtick_format: str | None = 'date',
     yaxis_kwargs: typing.Mapping[typing.Any, typing.Any] | None = None,
 ) -> str:
 
@@ -91,10 +92,20 @@ def render_line_plot(
 
     graph = blocks.concatenate_blocks([y_axis, plot])
 
-    formatter = functools.partial(
-        formats.format_timestamp,
-        representation='TimestampDate',
-    )
+    if xtick_format == 'date':
+        formatter = functools.partial(
+            formats.format_timestamp,
+            representation='TimestampDate',
+        )
+    elif xtick_format == 'age':
+        import tooltime
+
+        def formatter(xval: tooltime.Timestamp) -> str:  # type: ignore
+            phrase = tooltime.get_age(xval, 'TimelengthPhrase')
+            return phrase.split(', ')[0]
+
+    else:
+        formatter = None
     x_axis = render_utils.render_x_axis(
         grid=render_grid,
         formatter=formatter,
