@@ -155,7 +155,7 @@ def get_outlined_text(
         border_width = 0
     pad_width = left_pad + right_pad
     if width is None:
-        max_line_width = max(len(line) for line in text_lines)
+        max_line_width = max(formats.get_styled_width(line) for line in text_lines)
         width = border_width + pad_width + max_line_width
     text_width = width - border_width - pad_width
 
@@ -192,7 +192,7 @@ def get_outlined_text(
 
     # add text
     for line in text_lines:
-        if len(line) > text_width:
+        if formats.get_styled_width(line) > text_width:
             line = line[: text_width - 3] + '...'
         if justify == 'left':
             line = line.ljust(text_width)

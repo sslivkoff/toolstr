@@ -5,6 +5,26 @@ import typing
 from .. import indents
 
 
+def get_styled_width(text: str) -> int:
+    import rich.text
+
+    return rich.text.Text.from_markup(text).cell_len
+
+
+def fit_styled_width(text: str, width: int, ellipses: bool = False) -> str:
+    import rich.text
+
+    if ellipses:
+        width = width - 3
+
+    fitted = rich.text.Text.from_markup(text).fit(width)[0].markup
+
+    if ellipses:
+        fitted = fitted + '...'
+
+    return fitted
+
+
 def print(
     *text: typing.Any,
     style: typing.Optional[str] = None,
