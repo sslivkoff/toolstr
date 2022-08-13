@@ -6,15 +6,11 @@ import typing
 from .. import blocks
 from .. import formats
 from .. import indents
+from .. import spec
 from . import char_dicts
 from . import grid_utils
 from . import raster_utils
 from . import render_utils
-
-
-rows_per_cell = 4
-columns_per_cell = 2
-char_dict = char_dicts.get_braille_dict()
 
 
 def render_line_plot(
@@ -27,7 +23,15 @@ def render_line_plot(
     tick_label_style: str | None = None,
     xtick_format: str | None = 'date',
     yaxis_kwargs: typing.Mapping[typing.Any, typing.Any] | None = None,
+    char_dict: str | spec.GridCharDict | None = None,
 ) -> str:
+
+    if char_dict is None:
+        char_dict = 'braille'
+    char_dict = char_dicts.get_char_dict(char_dict)
+    single_char = next(iter(char_dict.keys()))
+    rows_per_cell = len(single_char)
+    columns_per_cell = len(single_char[0])
 
     non_none_xvals = [xval for xval in xvals if xval is not None]
     non_none_yvals = [yval for yval in yvals if yval is not None]
