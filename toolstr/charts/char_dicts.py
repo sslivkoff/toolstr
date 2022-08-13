@@ -64,15 +64,15 @@ width_split_dict: spec.GridCharDict = {
 }
 
 
-def get_braille_dict() -> spec.GridCharDict:
-    from . import braille
-
-    return braille.braille_dict
-
-
 def get_char_dict(name: spec.SampleMode) -> spec.GridCharDict:
     if name == 'braille':
-        return get_braille_dict()
+        from . import braille_utils
+
+        return braille_utils.braille_dict
+    elif name == 'sextants':
+        from . import sextant_utils
+
+        return sextant_utils.sextants_dict
     elif name is None:
         return whole_dict
     else:
