@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import typing
 
 if typing.TYPE_CHECKING:
@@ -95,12 +96,16 @@ def format_number(
     postfix: typing.Optional[str] = None,
     order_of_magnitude: bool = False,
     oom_blank: str = '',
+    nan: str = '-',
 ) -> str:
     """
     TODO:
     - sigfigs
     - signed
     """
+
+    if math.isnan(value):
+        return nan
 
     if order_of_magnitude:
         value, new_postfix = _get_order_of_magnitude(value, oom_blank)
