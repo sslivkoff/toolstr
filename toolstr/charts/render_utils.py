@@ -23,17 +23,22 @@ def render_supergrid(
     array: np.typing.NDArray,  # type: ignore
     rows_per_cell: int | None = None,
     columns_per_cell: int | None = None,
-    char_dict: spec.GridCharDict | None = None,
-    sample_mode: spec.SampleMode | None = None,
+    char_dict: spec.GridCharDict | spec.SampleMode | None = None,
     color_grid: np.typing.NDArray | None = None,  # type: ignore
     color_map: typing.Mapping[int, str] | None = None,
 ) -> str:
 
-    if rows_per_cell is None or columns_per_cell is None or char_dict is None:
-        rows_per_cell, columns_per_cell = spec.sample_mode_size[sample_mode]
-        char_dict = char_dicts.get_char_dict(sample_mode)
-
     import numpy as np
+
+    # determine chart dict and related parameters
+    if char_dict is None:
+        char_dict = 'whole'
+    if isinstance(char_dict, str):
+        char_dict = char_dicts.get_char_dict(char_dict)
+    if rows_per_cell is None or columns_per_cell is None:
+        single_char_index = next(iter(char_dict.keys()))
+        rows_per_cell = len(single_char_index)
+        columns_per_cell = len(single_char_index[0])
 
     array = array[::-1]
     rows, columns = array.shape
@@ -71,8 +76,8 @@ def render_y_axis(
     label_gap: int = 0,
     chrome_style: str | None = None,
     tick_label_style: str | None = None,
-    label_prefix: str | None = None,
-    label_postfix: str | None = None,
+    tick_label_format: spec.NumberFormat | None = None,
+    tick_label_oom: bool = True,
 ) -> str:
 
     import numpy as np
@@ -80,6 +85,9 @@ def render_y_axis(
     tick_indices = (
         np.linspace(0, grid['n_rows'] - 1, n_ticks).round().astype(int)  # type: ignore
     )
+
+    if tick_label_format is None:
+        tick_label_format = {}
 
     label_width = width - (label_gap + tick_length)
     rows = []
@@ -89,23 +97,32 @@ def render_y_axis(
         if abs(row_center) < 1e-10:
             row_center = 0
 
-        order_of_magnitude = True
-        if row_center < 0.01:
-            order_of_magnitude = False
-            decimals = 30
-        elif row_center < 1000:
-            order_of_magnitude = False
-            decimals = 3
-        else:
-            decimals = 1
+        row_format: spec.NumberFormat = dict(tick_label_format)  # type: ignore
+        if tick_label_oom and 'order_of_magnitude' not in row_format:
+            if row_center < 0.01:
+                order_of_magnitude = False
+                scientific = True
+            elif row_center < 1000:
+                order_of_magnitude = False
+                scientific = False
+            else:
+                order_of_magnitude = True
+                scientific = False
+            row_format['order_of_magnitude'] = order_of_magnitude
+            row_format['scientific'] = scientific
+        if 'decimals' not in row_format:
+            if row_format.get('scientific'):
+                row_format['decimals'] = 1
+            elif row_center < 1000:
+                row_format['decimals'] = 3
+            else:
+                row_format['decimals'] = 1
+
+        row_format.setdefault('trailing_zeros', True)
 
         label = toolstr.format(
             row_center,
-            decimals=decimals,
-            trailing_zeros=True,
-            order_of_magnitude=order_of_magnitude,
-            prefix=label_prefix,
-            postfix=label_postfix,
+            **row_format
         )
         label = label[:label_width]
         label = label.rjust(label_width)
@@ -145,9 +162,28 @@ def render_x_axis(
     formatter: typing.Callable[[typing.Any], str] | None = None,
     chrome_style: str | None = None,
     tick_label_style: str | None = None,
+    tick_label_format: str = 'date',
 ) -> str:
 
     import numpy as np
+
+    if formatter is None:
+        if tick_label_format == 'date':
+            import functools
+
+            formatter = functools.partial(
+                formats.format_timestamp,
+                representation='TimestampDate',
+            )
+        elif tick_label_format == 'age':
+            import tooltime
+
+            def formatter(xval: tooltime.Timestamp) -> str:
+                phrase = tooltime.get_age(xval, 'TimelengthPhrase')
+                return phrase.split(', ')[0]
+
+        else:
+            raise Exception('invalid value for tick_label_format')
 
     tick_indices: np.NDArray = (  # type: ignore
         np.linspace(0, grid['n_columns'] - 1, n_ticks).round().astype(int)

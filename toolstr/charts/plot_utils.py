@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import functools
 import typing
 
 from .. import blocks
@@ -21,31 +20,32 @@ def render_line_plot(
     line_style: str | None = None,
     chrome_style: str | None = None,
     tick_label_style: str | None = None,
-    xtick_format: str | None = 'date',
+    xaxis_kwargs: typing.Mapping[typing.Any, typing.Any] | None = None,
     yaxis_kwargs: typing.Mapping[typing.Any, typing.Any] | None = None,
-    char_dict: str | spec.GridCharDict | None = None,
+    char_dict: spec.SampleMode | spec.GridCharDict | None = None,
 ) -> str:
 
+    # determine char dict
     if char_dict is None:
         char_dict = 'braille'
-    char_dict = char_dicts.get_char_dict(char_dict)
-    single_char = next(iter(char_dict.keys()))
-    rows_per_cell = len(single_char)
-    columns_per_cell = len(single_char[0])
+    if isinstance(char_dict, str):
+        char_dict = char_dicts.get_char_dict(char_dict)
+    single_char_index = next(iter(char_dict.keys()))
+    rows_per_cell = len(single_char_index)
+    columns_per_cell = len(single_char_index[0])
 
+    # determine bounds of render grid
     non_none_xvals = [xval for xval in xvals if xval is not None]
     non_none_yvals = [yval for yval in yvals if yval is not None]
-
     xmin = min(non_none_xvals)
     xmax = max(non_none_xvals)
     xrange = xmax - xmin
-
     ymin = min(non_none_yvals)
     ymax = max(non_none_yvals)
     yrange = ymax - ymin
-
     grid_ymin = max(ymin - 0.1 * yrange, 0)
 
+    # create grid in which to render plot
     grid = grid_utils.create_grid(
         n_rows=n_rows,
         n_columns=n_columns,
@@ -54,7 +54,6 @@ def render_line_plot(
         ymin=grid_ymin,
         ymax=ymax + 0.1 * yrange,
     )
-
     render_grid = grid_utils.create_grid(
         n_rows=int(n_rows / rows_per_cell),
         n_columns=int(n_columns / columns_per_cell),
@@ -64,18 +63,22 @@ def render_line_plot(
         ymax=ymax + 0.1 * yrange,
     )
 
+    # render raster of line plot
     raster = raster_utils.rasterize_line_plot(
         xvals=xvals,
         yvals=yvals,
         grid=grid,
     )
 
+    # render as supergrid
     plot = render_utils.render_supergrid(
         array=raster,
         rows_per_cell=rows_per_cell,
         columns_per_cell=columns_per_cell,
         char_dict=char_dict,
     )
+
+    # stylize plot line
     if line_style is not None:
         new_lines = [
             formats.add_style(line, line_style)
@@ -83,6 +86,7 @@ def render_line_plot(
         ]
         plot = '\n'.join(new_lines)
 
+    # create y axis
     y_axis_width = 9
     if yaxis_kwargs is None:
         yaxis_kwargs = {}
@@ -93,32 +97,21 @@ def render_line_plot(
         tick_label_style=tick_label_style,
         **yaxis_kwargs
     )
-
     graph = blocks.concatenate_blocks([y_axis, plot])
 
-    if xtick_format == 'date':
-        formatter = functools.partial(
-            formats.format_timestamp,
-            representation='TimestampDate',
-        )
-    elif xtick_format == 'age':
-        import tooltime
-
-        def formatter(xval: tooltime.Timestamp) -> str:  # type: ignore
-            phrase = tooltime.get_age(xval, 'TimelengthPhrase')
-            return phrase.split(', ')[0]
-
-    else:
-        formatter = None
+    # create x axis
+    if xaxis_kwargs is None:
+        xaxis_kwargs = {}
     x_axis = render_utils.render_x_axis(
         grid=render_grid,
-        formatter=formatter,
         chrome_style=chrome_style,
         tick_label_style=tick_label_style,
+        **xaxis_kwargs
     )
     x_axis = indents.indent_block(x_axis, indent=y_axis_width)
+    graph = graph + '\n' + x_axis
 
-    return graph + '\n' + x_axis
+    return graph
 
 
 def print_line_plot(
