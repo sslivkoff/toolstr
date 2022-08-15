@@ -56,19 +56,21 @@ BorderCharName = Literal[
 
 
 SampleMode = Literal[
-    None,
+    'whole',
     'height_split',
     'width_split',
     'quadrants',
+    'sextants',
     'braille',
 ]
 
 # (rows, columns)
-sample_mode_size = {
-    None: (1, 1),
+sample_mode_size: typing.Mapping[SampleMode, typing.Tuple[int, int]] = {
+    'whole': (1, 1),
     'height_split': (8, 1),
     'width_split': (1, 8),
     'quadrants': (2, 2),
+    'sextants': (3, 2),
     'braille': (4, 2),
 }
 

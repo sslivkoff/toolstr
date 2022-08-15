@@ -17,7 +17,7 @@ def create_grid(
     xmax: typing.Union[int, float],
     ymin: typing.Union[int, float],
     ymax: typing.Union[int, float],
-    sample_mode: spec.SampleMode = None,
+    sample_mode: spec.SampleMode = 'whole',
 ) -> spec.Grid:
 
     row_factor, column_factor = spec.sample_mode_size[sample_mode]
