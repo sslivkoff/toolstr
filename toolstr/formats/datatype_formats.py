@@ -172,6 +172,12 @@ def format_number(
                 significand = significand[:-1]
             formatted = significand + 'e' + mantissa
 
+    if scientific:
+        if 'e0' in formatted:
+            formatted = formatted.replace('e0', 'e')
+        if 'e-0' in formatted:
+            formatted = formatted.replace('e-0', 'e-')
+
     # add percentage sign
     if percentage:
         formatted += '%'
