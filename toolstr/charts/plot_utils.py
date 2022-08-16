@@ -25,6 +25,8 @@ def render_line_plot(
     char_dict: spec.SampleMode | spec.GridCharDict | None = None,
 ) -> str:
 
+    import numpy as np
+
     # determine char dict
     if char_dict is None:
         char_dict = 'braille'
@@ -35,8 +37,13 @@ def render_line_plot(
     columns_per_cell = len(single_char_index[0])
 
     # determine bounds of render grid
-    non_none_xvals = [xval for xval in xvals if xval is not None]
-    non_none_yvals = [yval for yval in yvals if yval is not None]
+    xvals = np.array(xvals, dtype=float)
+    yvals = np.array(yvals, dtype=float)
+    xmask = ~np.isnan(xvals)
+    ymask = ~np.isnan(yvals)
+    mask = xmask * ymask
+    non_none_xvals = xvals[mask]
+    non_none_yvals = yvals[mask]
     xmin = min(non_none_xvals)
     xmax = max(non_none_xvals)
     xrange = xmax - xmin
