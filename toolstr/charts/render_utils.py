@@ -162,7 +162,7 @@ def render_x_axis(
     formatter: typing.Callable[[typing.Any], str] | None = None,
     chrome_style: str | None = None,
     tick_label_style: str | None = None,
-    tick_label_format: str = 'date',
+    tick_label_format: str | None = 'date',
 ) -> str:
 
     import numpy as np
@@ -181,6 +181,19 @@ def render_x_axis(
             def formatter(xval: tooltime.Timestamp) -> str:
                 phrase = tooltime.get_age(xval, 'TimelengthPhrase')
                 return phrase.split(', ')[0]
+
+        elif tick_label_format == 'iso':
+            import functools
+
+            formatter = functools.partial(
+                formats.format_timestamp,
+                representation='TimestampISOPretty',
+            )
+
+        elif tick_label_format is None:
+
+            def formatter(xval: tooltime.Timestamp) -> str:
+                return toolstr.format(xval)
 
         else:
             raise Exception('invalid value for tick_label_format')
