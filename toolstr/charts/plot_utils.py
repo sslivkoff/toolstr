@@ -37,8 +37,8 @@ def render_line_plot(
     columns_per_cell = len(single_char_index[0])
 
     # determine bounds of render grid
-    xvals = np.array(xvals, dtype=float)
-    yvals = np.array(yvals, dtype=float)
+    xvals = np.array(xvals, dtype=float)  # type: ignore
+    yvals = np.array(yvals, dtype=float)  # type: ignore
     xmask = ~np.isnan(xvals)
     ymask = ~np.isnan(yvals)
     mask = xmask * ymask
