@@ -11,6 +11,7 @@ from . import multiline_tables
 
 
 if typing.TYPE_CHECKING:
+    from typing_extensions import Literal
     import rich.console
 
     class TableStyleContext(TypedDict):
@@ -50,6 +51,8 @@ def print_table(
     *,
     add_row_index: bool = False,
     row_start_index: int = 1,
+    limit_rows: int | None = None,
+    limit_rows_at: Literal['start', 'middle', 'end'] = 'middle',
     missing_columns: typing.Literal['fill', 'clip', 'error'] = 'error',
     empty_str: str = '',
     format: FormatKwargs | None = None,
@@ -94,6 +97,8 @@ def print_table(
 
     # add row index
     rows, labels = _add_index(rows, labels, add_row_index, row_start_index)
+    if limit_rows is not None and len(rows) > limit_rows:
+        rows = clip_rows(rows, n=limit_rows, clip_position=limit_rows_at)
 
     # convert cells and labels to str
     str_cells, str_labels, column_widths, use_styles = _stringify_all(
@@ -941,3 +946,35 @@ def _print_table(
 
     else:
         print(table_as_str)
+
+
+def clip_rows(
+    rows: list[typing.Sequence[typing.Any]],
+    n: int,
+    *,
+    clip_position: Literal['start', 'middle', 'end'] = 'end',
+    fill: str | None = '...',
+) -> list[typing.Sequence[typing.Any]]:
+
+    if len(rows) <= n:
+        return rows
+
+    # construct fill
+    if fill is not None:
+        n_columns = len(rows[0])
+        fill_rows: list[typing.Sequence[typing.Any]] = [[fill] * n_columns]
+        n = n - 1
+
+    # clip
+    if clip_position == 'start':
+        return fill_rows + rows[-n:]
+    elif clip_position == 'end':
+        return rows[:n] + fill_rows
+    elif clip_position == 'middle':
+        import math
+
+        n_head = math.ceil(n / 2)
+        n_tail = n - n_head
+        return rows[:n_head] + fill_rows + rows[-n_tail:]
+    else:
+        raise Exception('invalid clip_rows specification')
