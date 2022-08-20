@@ -3,7 +3,6 @@ from __future__ import annotations
 import typing
 
 from .. import formats
-from .. import indents
 from .. import spec
 from . import outline_chars
 
@@ -44,7 +43,7 @@ def print_outlined_text(
     )
 
     if indent is not None:
-        string = indents.indent_block(block=string, indent=indent)
+        string = formats.indent_block(block=string, indent=indent)
 
     if style is not None:
         formats.print(string)

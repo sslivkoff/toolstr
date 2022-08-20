@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import typing
 
-from .. import indents
+from . import positional_formats
 
 
 def get_styled_width(text: str) -> int:
@@ -35,7 +35,7 @@ def print(
     import rich.theme
 
     if indent is not None:
-        text = (indents.indent_block(str(text[0]), indent=indent),) + tuple(
+        text = (positional_formats.indent_block(str(text[0]), indent=indent),) + tuple(
             text[1:]
         )
 

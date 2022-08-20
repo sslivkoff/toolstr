@@ -2,9 +2,7 @@ from __future__ import annotations
 
 import typing
 
-from .. import blocks
 from .. import formats
-from .. import indents
 from .. import spec
 from . import char_dicts
 from . import grid_utils
@@ -104,7 +102,7 @@ def render_line_plot(
         tick_label_style=tick_label_style,
         **yaxis_kwargs
     )
-    graph = blocks.concatenate_blocks([y_axis, plot])
+    graph = formats.concatenate_blocks([y_axis, plot])
 
     # create x axis
     if xaxis_kwargs is None:
@@ -115,7 +113,7 @@ def render_line_plot(
         tick_label_style=tick_label_style,
         **xaxis_kwargs
     )
-    x_axis = indents.indent_block(x_axis, indent=y_axis_width)
+    x_axis = formats.indent_block(x_axis, indent=y_axis_width)
     graph = graph + '\n' + x_axis
 
     return graph

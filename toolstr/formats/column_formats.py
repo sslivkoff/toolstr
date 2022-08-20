@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import typing
 
-from .. import blocks
+from . import positional_formats
 
 
 def columnize(
@@ -29,14 +29,14 @@ def columnize(
 
     # upper block
     min_height = len(columns[-1])
-    columnized = blocks.concatenate_blocks(
+    columnized = positional_formats.concatenate_blocks(
         [column[:min_height] for column in columns],
         gap=gap,
     )
 
     # lower block
     if min_height < len(columns[0]):
-        lower_block = blocks.concatenate_blocks(
+        lower_block = positional_formats.concatenate_blocks(
             [column[min_height:] for column in columns[:-1]],
             gap=gap,
         )
