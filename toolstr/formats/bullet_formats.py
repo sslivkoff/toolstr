@@ -9,11 +9,11 @@ from . import rich_formats
 
 
 def create_bullet_str(
-    value: str,
+    value: typing.Any,
     *,
     bullet_str: str | None = None,
     number: int | None = None,
-    key: str | None = None,
+    key: typing.Any | None = None,
     colon_str: str | None = None,
     bullet_style: str | None = None,
     value_style: str | None = None,
@@ -36,11 +36,11 @@ def create_bullet_str(
         if colon_str is None:
             colon_str = ':'
         colon_str = rich_formats.add_style(text=colon_str, style=colon_style)
-        key = rich_formats.add_style(text=key, style=key_style)
+        key = rich_formats.add_style(text=str(key), style=key_style)
         as_str = as_str + ' ' + key + colon_str
 
     # construct value
-    value = rich_formats.add_style(text=value, style=value_style)
+    value = rich_formats.add_style(text=str(value), style=value_style)
     as_str = as_str + ' ' + value
 
     # add indent
