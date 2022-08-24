@@ -25,23 +25,23 @@ def create_bullet_str(
     # construct bullet
     if bullet_str is None:
         if number is not None:
-            bullet_str = str(number) + '.'
+            bullet_str = str(number) + '. '
         else:
-            bullet_str = '-'
+            bullet_str = '- '
     bullet_str = rich_formats.add_style(text=bullet_str, style=bullet_style)
     as_str = bullet_str
 
     # construct key
     if key is not None:
         if colon_str is None:
-            colon_str = ':'
+            colon_str = ': '
         colon_str = rich_formats.add_style(text=colon_str, style=colon_style)
         key = rich_formats.add_style(text=str(key), style=key_style)
-        as_str = as_str + ' ' + key + colon_str
+        as_str = as_str + key + colon_str
 
     # construct value
     value = rich_formats.add_style(text=str(value), style=value_style)
-    as_str = as_str + ' ' + value
+    as_str = as_str + value
 
     # add indent
     if indent is not None:
