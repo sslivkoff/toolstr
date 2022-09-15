@@ -17,6 +17,12 @@ def print_dataframe_as_table(
 
     # promote index columns to plain columns
     if include_index:
+        if df.index.name is not None:
+            name = df.index.name
+        else:
+            name = 'index'
+        if name not in columns:
+            columns = [name] + columns
         df = df.reset_index()
 
     # compile columns
