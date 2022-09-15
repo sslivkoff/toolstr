@@ -45,10 +45,7 @@ def print_outlined_text(
     if indent is not None:
         string = formats.indent_block(block=string, indent=indent)
 
-    if style is not None:
-        formats.print(string)
-    else:
-        print(string)
+    formats.print(string)
 
 
 def print_text_box(
