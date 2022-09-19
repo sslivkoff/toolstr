@@ -19,8 +19,18 @@ def create_bullet_str(
     value_style: str | None = None,
     key_style: str | None = None,
     colon_style: str | None = None,
+    styles: typing.Mapping[str, str] | None = None,
     indent: int | str | None = None,
 ) -> str:
+
+    if bullet_style is None and styles is not None:
+        bullet_style = styles.get('title')
+    if value_style is None and styles is not None:
+        value_style = styles.get('description')
+    if key_style is None and styles is not None:
+        key_style = styles.get('option')
+    if colon_style is None and styles is not None:
+        colon_style = styles.get('title')
 
     # construct bullet
     if bullet_str is None:
