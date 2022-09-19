@@ -21,8 +21,8 @@ def print_dataframe_as_table(
             name = df.index.name
         else:
             name = 'index'
-        if name not in columns:
-            columns = [name] + columns
+        if columns is not None and name not in columns:
+            columns = [name] + list(columns)
         df = df.reset_index()
 
     # compile columns
