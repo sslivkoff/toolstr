@@ -46,7 +46,7 @@ def print(
 
 
 def add_style(text: str, style: str | None) -> str:
-    if style is None:
+    if style is None or style == '':
         return text
     else:
         return '[' + style + ']' + text + '[/' + style + ']'

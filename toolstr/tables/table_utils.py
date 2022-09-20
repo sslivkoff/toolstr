@@ -594,9 +594,7 @@ def _stylize_rows(
             if cell_style is not None:
                 if not isinstance(cell_style, str):
                     raise Exception('could not convert style to str')
-                str_cell = (
-                    '[' + cell_style + ']' + str_cell + '[/' + cell_style + ']'
-                )
+                str_cell = formats.add_style(str_cell, cell_style)
             stylized_row.append(str_cell)
 
         stylized_rows.append(stylized_row)
