@@ -39,6 +39,7 @@ def print_horizontal_line(
 
 def print_outlined_text(
     text: str,
+    *,
     width: typing.Optional[int] = None,
     justify: typing.Optional[spec.HorizontalJustification] = None,
     upper_border: typing.Optional[bool] = None,
@@ -80,6 +81,7 @@ def print_outlined_text(
 
 def print_text_box(
     text: str,
+    *,
     width: typing.Optional[int] = None,
     justify: typing.Optional[spec.HorizontalJustification] = None,
     upper_pad: int = 0,
@@ -108,6 +110,7 @@ def print_text_box(
 
 def print_header(
     text: str,
+    *,
     width: typing.Optional[int] = None,
     justify: typing.Optional[spec.HorizontalJustification] = None,
     pad: int = 0,
@@ -130,6 +133,7 @@ def print_header(
 
 def get_outlined_text(
     text: str,
+    *,
     width: typing.Optional[int] = None,
     justify: typing.Optional[spec.HorizontalJustification] = None,
     upper_border: typing.Optional[bool] = None,

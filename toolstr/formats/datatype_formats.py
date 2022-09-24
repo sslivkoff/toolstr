@@ -37,6 +37,7 @@ def format(
 
 def format_nbytes(
     nbytes: int | float,
+    *,
     decimals: int = 2,
     commas: bool = False,
     **format_kwargs: typing.Any,
@@ -84,6 +85,7 @@ def format_timestamp(
 
 def format_number(
     value: typing.SupportsFloat,
+    *,
     percentage: bool = False,
     scientific: typing.Optional[bool] = None,
     signed: bool = False,
