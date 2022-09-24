@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import typing
 import typing_extensions
 
@@ -13,14 +12,14 @@ def print_horizontal_line(
     n: int | None = None,
     *,
     style: str | None = None,
-    character: typing_extensions.Literal[
-        'bottom', 'top', 'center'
-    ] = 'center',
+    character: typing_extensions.Literal['bottom', 'top', 'center'] = 'center',
 ) -> None:
 
     if n is None:
         try:
-            n = os.get_terminal_size().columns
+            import subprocess
+
+            n = int(subprocess.check_output('tput cols', shell=True))
         except Exception:
             n = 80
 
