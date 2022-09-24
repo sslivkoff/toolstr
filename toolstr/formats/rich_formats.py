@@ -4,6 +4,18 @@ import typing
 
 from . import positional_formats
 
+if typing.TYPE_CHECKING:
+    import typing_extensions
+
+    RichColorSystem = typing_extensions.Literal[
+        None,
+        'auto',
+        'standard',
+        '256',
+        'truecolor',
+        'windows',
+    ]
+
 
 def get_styled_width(text: str) -> int:
     import rich.text
@@ -29,18 +41,20 @@ def print(
     *text: typing.Any,
     style: typing.Optional[str] = None,
     indent: str | int | None = None,
+    color_system: RichColorSystem = None,
     **rich_kwargs: typing.Any,
 ) -> None:
     import rich.console
     import rich.theme
 
     if indent is not None:
-        text = (positional_formats.indent_block(str(text[0]), indent=indent),) + tuple(
-            text[1:]
-        )
+        text = (
+            positional_formats.indent_block(str(text[0]), indent=indent),
+        ) + tuple(text[1:])
 
     console = rich.console.Console(
         theme=rich.theme.Theme(inherit=False),
+        color_system=color_system,
     )
     console.print(*text, style=style, **rich_kwargs)
 
