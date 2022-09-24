@@ -16,6 +16,12 @@ if typing.TYPE_CHECKING:
         'windows',
     ]
 
+    class _FormatDefaults(typing.TypedDict):
+        color_system: RichColorSystem
+
+
+_format_defaults: _FormatDefaults = {'color_system': None}
+
 
 def get_styled_width(text: str) -> int:
     import rich.text
@@ -37,6 +43,10 @@ def fit_styled_width(text: str, width: int, ellipses: bool = False) -> str:
     return fitted
 
 
+def set_default_color_system(color_system: RichColorSystem) -> None:
+    _format_defaults['color_system'] = color_system
+
+
 def print(
     *text: typing.Any,
     style: typing.Optional[str] = None,
@@ -51,6 +61,9 @@ def print(
         text = (
             positional_formats.indent_block(str(text[0]), indent=indent),
         ) + tuple(text[1:])
+
+    if color_system is None:
+        color_system = _format_defaults['color_system']
 
     console = rich.console.Console(
         theme=rich.theme.Theme(inherit=False),
