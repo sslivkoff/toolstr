@@ -1,10 +1,40 @@
 from __future__ import annotations
 
+import os
 import typing
+import typing_extensions
 
 from .. import formats
 from .. import spec
 from . import outline_chars
+
+
+def print_horizontal_line(
+    n: int | None = None,
+    *,
+    style: str | None = None,
+    character: typing_extensions.Literal[
+        'bottom', 'top', 'center'
+    ] = 'center',
+) -> None:
+
+    if n is None:
+        try:
+            n = os.get_terminal_size().columns
+        except Exception:
+            n = 80
+
+    if character == 'bottom':
+        char = '▁'
+    elif character == 'center':
+        char = '─'
+    elif character == 'top':
+        char = '🭶'
+    else:
+        raise Exception('unknown vertical alignment: ' + str(character))
+
+    text = char * n
+    formats.print(text, style=style)
 
 
 def print_outlined_text(
@@ -151,7 +181,9 @@ def get_outlined_text(
         border_width = 0
     pad_width = left_pad + right_pad
     if width is None:
-        max_line_width = max(formats.get_styled_width(line) for line in text_lines)
+        max_line_width = max(
+            formats.get_styled_width(line) for line in text_lines
+        )
         width = border_width + pad_width + max_line_width
     text_width = width - border_width - pad_width
 
