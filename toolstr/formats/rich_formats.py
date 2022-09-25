@@ -65,9 +65,13 @@ def print(
     if color_system is None:
         color_system = _format_defaults['color_system']
 
+    if color_system is not None:
+        kwargs = {'color_system': color_system}
+    else:
+        kwargs = {}
     console = rich.console.Console(
         theme=rich.theme.Theme(inherit=False),
-        color_system=color_system,
+        **kwargs,  # type: ignore
     )
     console.print(*text, style=style, **rich_kwargs)
 
