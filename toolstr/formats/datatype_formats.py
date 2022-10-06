@@ -93,7 +93,7 @@ def format_number(
     decimals: typing.Optional[int] = None,
     nonfractional_decimals: typing.Optional[int] = None,
     fractional_decimals: typing.Optional[int] = None,
-    trailing_zeros: bool = False,
+    trailing_zeros: bool | None = None,
     prefix: typing.Optional[str] = None,
     postfix: typing.Optional[str] = None,
     order_of_magnitude: bool = False,
@@ -108,6 +108,9 @@ def format_number(
 
     if math.isnan(value):
         return nan
+
+    if trailing_zeros is None:
+        trailing_zeros = decimals is not None or order_of_magnitude
 
     if order_of_magnitude:
         value, new_postfix = _get_order_of_magnitude(value, oom_blank)
