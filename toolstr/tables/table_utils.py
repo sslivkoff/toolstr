@@ -484,7 +484,7 @@ def _stringify_cells(
             if (
                 isinstance(cell, (int, float))
                 or type(cell).__name__.startswith('int')
-                or type(cell).__name__.startwith('float')
+                or type(cell).__name__.startswith('float')
             ):
 
                 # get format kwargs
