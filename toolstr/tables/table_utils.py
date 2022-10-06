@@ -479,7 +479,13 @@ def _stringify_cells(
         if isinstance(cell, str):
             as_str = cell
         else:
-            if isinstance(cell, (int, float)):
+
+            # include numpy types
+            if (
+                isinstance(cell, (int, float))
+                or type(cell).__name__.startswith('int')
+                or type(cell).__name__.startwith('float')
+            ):
 
                 # get format kwargs
                 cell_format: typing.Mapping[str, typing.Any] | None
