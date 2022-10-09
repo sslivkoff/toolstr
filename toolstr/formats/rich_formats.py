@@ -76,8 +76,16 @@ def print(
     console.print(*text, style=style, **rich_kwargs)
 
 
-def add_style(text: str, style: str | None) -> str:
+def add_style(text: str, style: str | None, *, per_line: bool = False) -> str:
     if style is None or style == '':
         return text
     else:
-        return '[' + style + ']' + text + '[/' + style + ']'
+        if per_line and '\n' in text:
+            lines = text.split('\n')
+            styled_lines = [
+                add_style(line, style, per_line=False) for line in lines
+            ]
+            return '\n'.join(styled_lines)
+
+        else:
+            return '[' + style + ']' + text + '[/' + style + ']'
