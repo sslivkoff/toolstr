@@ -139,15 +139,15 @@ def _split_multiline_row(
         column_justify = vertical_justify[c]
         if column_justify == 'top':
             full_lines: typing.Sequence[typing.Any] = (
-                cell_lines + [None] * extra_height  # type: ignore
+                cell_lines + [None] * extra_height
             )
         elif column_justify == 'bottom':
-            full_lines = [None] * extra_height + cell_lines  # type: ignore
+            full_lines = [None] * extra_height + cell_lines
         elif column_justify == 'center':
             extra_top = int(extra_height / 2)
             extra_bottom = extra_height - extra_top
             full_lines = (
-                [None] * extra_top + cell_lines + [None] * extra_bottom  # type: ignore
+                [None] * extra_top + cell_lines + [None] * extra_bottom
             )
         else:
             raise Exception('unknown justification')
