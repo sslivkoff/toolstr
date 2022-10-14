@@ -14,6 +14,10 @@ if typing.TYPE_CHECKING:
     from typing_extensions import Literal
     import rich.console
 
+    class TableData(TypedDict):
+        rows: typing.Sequence[None | typing.Sequence[typing.Any]]
+        labels: typing.Sequence[str] | None
+
     class TableStyleContext(TypedDict):
         cell: typing.Any
         str_cell: str
@@ -41,6 +45,26 @@ if typing.TYPE_CHECKING:
     ]
 
     FormatKwargs = typing.Mapping[str, typing.Any]
+
+
+def transpose_table(
+    rows: typing.Sequence[typing.Sequence[typing.Any]],
+    *,
+    labels: typing.Sequence[str] | None = None,
+    create_labels: bool = False,
+) -> TableData:
+
+    if labels is not None:
+        rows = [labels] + list(rows)
+    new_rows = list(zip(*rows))
+
+    if create_labels:
+        new_labels = new_rows[0]
+        new_rows = new_rows[1:]
+    else:
+        new_labels = None
+
+    return {'rows': new_rows, 'labels': new_labels}
 
 
 def print_table(
