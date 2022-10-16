@@ -107,3 +107,7 @@ def to_numeric_type(value: typing.SupportsFloat) -> typing.Union[int, float]:
         return int(value)  # type: ignore
     else:
         return float(value)
+
+
+class ValueTooBig(Exception):
+    pass

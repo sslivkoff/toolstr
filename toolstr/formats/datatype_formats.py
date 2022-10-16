@@ -113,11 +113,18 @@ def format_number(
         trailing_zeros = decimals is not None or order_of_magnitude
 
     if order_of_magnitude:
-        value, new_postfix = _get_order_of_magnitude(value, oom_blank)
+        try:
+            value, new_postfix = _get_order_of_magnitude(value, oom_blank)
+        except spec.ValueTooBig:
+            as_str = '%.20e' % value
+            exp_index = as_str.index('e')
+            value = float(as_str[:exp_index])
+            new_postfix = as_str[exp_index:]
+
         if postfix is None:
             postfix = new_postfix
         else:
-            postfix = postfix = new_postfix
+            postfix = postfix + new_postfix
 
     # determine default formatting
     numeric = spec.to_numeric_type(value)
@@ -236,7 +243,9 @@ def _get_order_of_magnitude(
     value = spec.to_numeric_type(value)
     abs_value = abs(value)
     if abs_value >= 1e18:
-        raise NotImplementedError('value too big')
+        raise spec.ValueTooBig(
+            'value too big for english order of magnitude label'
+        )
     elif abs_value >= 1e15:
         return value / 1e15, 'Q'
     elif abs_value >= 1e12:
