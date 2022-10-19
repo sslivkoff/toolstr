@@ -382,8 +382,10 @@ def _stringify_all(
         label_style = _convert_column_dict_to_list(
             label_style, n_columns, labels
         )
-        if isinstance(label_style, list) and len(label_style) != len(
-            str_labels[0]
+        if (
+            len(str_labels) > 0
+            and isinstance(label_style, list)
+            and len(label_style) != len(str_labels[0])
         ):
             raise Exception('label_style has wrong length')
 
