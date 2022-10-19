@@ -21,6 +21,7 @@ def render_line_plot(
     xaxis_kwargs: typing.Mapping[typing.Any, typing.Any] | None = None,
     yaxis_kwargs: typing.Mapping[typing.Any, typing.Any] | None = None,
     char_dict: spec.SampleMode | spec.GridCharDict | None = None,
+    y_axis_width: int = 9,
 ) -> str:
 
     import numpy as np
@@ -92,7 +93,6 @@ def render_line_plot(
         plot = '\n'.join(new_lines)
 
     # create y axis
-    y_axis_width = 9
     if yaxis_kwargs is None:
         yaxis_kwargs = {}
     y_axis = render_utils.render_y_axis(
