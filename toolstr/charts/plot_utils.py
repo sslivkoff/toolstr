@@ -53,16 +53,16 @@ def render_line_plot(
 
     # create grid in which to render plot
     grid = grid_utils.create_grid(
-        n_rows=n_rows,
-        n_columns=n_columns,
+        n_rows=n_rows * rows_per_cell,
+        n_columns=n_columns * columns_per_cell,
         xmin=xmin - 0.0 * xrange,
         xmax=xmax + 0.0 * xrange,
         ymin=grid_ymin,
         ymax=ymax + 0.1 * yrange,
     )
     render_grid = grid_utils.create_grid(
-        n_rows=int(n_rows / rows_per_cell),
-        n_columns=int(n_columns / columns_per_cell),
+        n_rows=n_rows,
+        n_columns=n_columns,
         xmin=xmin - 0.0 * xrange,
         xmax=xmax + 0.0 * xrange,
         ymin=grid_ymin,
