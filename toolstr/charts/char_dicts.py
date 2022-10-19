@@ -73,7 +73,7 @@ def get_char_dict(name: spec.SampleMode) -> spec.GridCharDict:
         from . import sextant_utils
 
         return sextant_utils.sextants_dict
-    elif name is None:
+    elif name is None or name == 'whole':
         return whole_dict
     else:
         small_char_dicts: dict[str, spec.GridCharDict] = {
