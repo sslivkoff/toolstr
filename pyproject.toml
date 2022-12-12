@@ -32,4 +32,5 @@ Source = "https://github.com/sslivkoff/toolstr"
 
 [tool.mypy]
 strict = true
+implicit_reexport = true
 files = ["toolstr"]
