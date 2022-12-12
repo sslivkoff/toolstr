@@ -41,8 +41,8 @@ def render_line_plot(
     xmask = ~np.isnan(xvals)
     ymask = ~np.isnan(yvals)
     mask = xmask * ymask
-    non_none_xvals = xvals[mask]
-    non_none_yvals = yvals[mask]
+    non_none_xvals = xvals[mask]  # type: ignore
+    non_none_yvals = yvals[mask]  # type: ignore
     xmin = min(non_none_xvals)
     xmax = max(non_none_xvals)
     xrange = xmax - xmin

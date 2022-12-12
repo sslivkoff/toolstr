@@ -46,8 +46,8 @@ def render_supergrid(
     super_columns = columns / columns_per_cell
 
     new_rows = []
-    super_rows = np.vsplit(array, super_rows)
-    for sr, super_row in enumerate(super_rows):
+    super_rows = np.vsplit(array, super_rows)  # type: ignore
+    for sr, super_row in enumerate(super_rows):  # type: ignore
         new_row = []
         super_cells: np.typing.NDArray = np.hsplit(super_row, super_columns)  # type: ignore
         for sc, super_cell in enumerate(super_cells):
@@ -83,7 +83,7 @@ def render_y_axis(
     import numpy as np
 
     tick_indices = (
-        np.linspace(0, grid['n_rows'] - 1, n_ticks).round().astype(int)  # type: ignore
+        np.linspace(0, grid['n_rows'] - 1, n_ticks).round().astype(int)
     )
 
     if tick_label_format is None:
