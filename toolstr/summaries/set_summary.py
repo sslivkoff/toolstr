@@ -55,8 +55,10 @@ def print_set_diff(
         [rhs_name + ' - ' + lhs_name, len(rhs_only)],
         [lhs_name + ' ∩ ' + rhs_name, len(intersection)],
         [lhs_name + ' ∪ ' + rhs_name, len(union)],
-        ['relation', relation],
     ]
+
+    for row in rows:
+        row.append(row[-1] / len(union))
 
     if include_visuals:
         visuals = _create_set_visuals(
@@ -68,14 +70,21 @@ def print_set_diff(
         )
         for visual, row in zip(visuals, rows):
             row.append(visual)
-        rows[-1].append('')
 
-        labels = ['', 'size', 'visual']
+        labels = ['', 'size', '% of ∪', 'visual']
     else:
-        labels = ['', 'size']
+        labels = ['', 'size', '% of ∪']
 
-    outlines.print_text_box('Sizes')
-    tables.print_table(rows, labels=labels)
+    outlines.print_text_box('Overlap between sets')
+    if relation != '':
+        print()
+        print(relation)
+    print()
+    tables.print_table(
+        rows,
+        labels=labels,
+        column_formats={'% of ∪': {'percentage': True, 'decimals': 1}},
+    )
 
     if verbose >= 2:
         outlines.print_text_box('{ ' + lhs_name + ' - ' + rhs_name + ' }')
@@ -121,20 +130,24 @@ def _create_set_visuals(
     rhs_only: typing.Sequence[typing.Any],
     union: typing.Sequence[typing.Any],
     visual_width: int = 30,
-    left_cap: str = '├',
-    right_cap: str = '┤',
+    left_cap: str = '└',
+    right_cap: str = '┘',
+    empty_cap: str = '╵',
 ) -> typing.Sequence[str]:
 
+    # left_cap: str = '├',
+    # right_cap: str = '┤',
+    # empty_cap: str = '│',
     # left_cap = '←'
     # right_cap = '→'
-    # left_cap = '└'
-    # right_cap = '┘'
+    left_cap = '└'
+    right_cap = '┘'
 
     visual_width = 30
     n_per_char = len(union) / visual_width
     if len(lhs) == 0:
         n_left_chars = 1
-        lhs_visual = '│'
+        lhs_visual = empty_cap
     else:
         n_left_chars = round(len(lhs) / n_per_char)
         n_left_chars = max(2, n_left_chars)
@@ -143,7 +156,7 @@ def _create_set_visuals(
 
     if len(rhs) == 0:
         n_right_chars = 1
-        rhs_visual = '│'
+        rhs_visual = empty_cap
     else:
         n_right_chars = round(len(rhs) / n_per_char)
         n_right_chars = max(2, n_right_chars)
@@ -151,14 +164,16 @@ def _create_set_visuals(
     rhs_visual = rhs_visual.rjust(visual_width)
 
     if len(lhs_only) == 0:
-        lhs_only_visual = '│'
+        n_lhs_only_chars = 1
+        lhs_only_visual = empty_cap
     else:
         n_lhs_only_chars = visual_width - n_right_chars + 1
         lhs_only_visual = left_cap + '─' * (n_lhs_only_chars - 2) + right_cap
     lhs_only_visual = lhs_only_visual.ljust(visual_width)
 
     if len(rhs_only) == 0:
-        rhs_only_visual = '│'
+        n_rhs_only_chars = 1
+        rhs_only_visual = empty_cap
     else:
         n_rhs_only_chars = visual_width - n_left_chars + 1
         rhs_only_visual = left_cap + '─' * (n_rhs_only_chars - 2) + right_cap
