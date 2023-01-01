@@ -77,6 +77,12 @@ def print_table(
     row_start_index: int = 1,
     limit_rows: int | None = None,
     limit_rows_at: Literal['start', 'middle', 'end'] = 'middle',
+    sort_key: typing.Callable[..., typing.Any] | None = None,
+    sort_column: str
+    | int
+    | typing.Sequence[str]
+    | typing.Sequence[int]
+    | None = None,
     missing_columns: typing.Literal['fill', 'clip', 'error'] = 'error',
     empty_str: str = '',
     format: FormatKwargs | None = None,
@@ -118,6 +124,9 @@ def print_table(
 
     # check missing columns
     rows, labels = _fix_missing_data(rows, labels, missing_columns, empty_str)
+
+    # sort rows
+    rows = _sort_rows(rows, labels, sort_column, sort_key)
 
     # add row index
     rows, labels = _add_index(rows, labels, add_row_index, row_start_index)
@@ -486,6 +495,55 @@ def _convert_column_dict_to_list(
 
     else:
         raise Exception('unknown format: ' + str(column_data))
+
+
+def _sort_rows(
+    rows: list[typing.Sequence[typing.Any]],
+    labels: typing.Sequence[str] | None,
+    sort_column: str
+    | int
+    | typing.Sequence[str]
+    | typing.Sequence[int]
+    | None = None,
+    sort_key: typing.Callable[..., typing.Any] | None = None,
+) -> list[typing.Sequence[typing.Any]]:
+
+    if sort_column is not None and sort_key is not None:
+        raise Exception('should not specify both sort_key and sort_column')
+    for raw_row in rows:
+        if raw_row is None:
+            raise Exception('cannot sort gap rows equal to None')
+
+    # sort by values of particular columns
+    if sort_column is not None:
+        if labels is None:
+            raise Exception('must specify labels when specifying sort_column')
+        if isinstance(sort_column, (str, int)):
+            index = _get_label_index(sort_column, labels)
+            return sorted(rows, key=lambda row: row[index])  # type: ignore
+        elif isinstance(sort_column, (list, tuple)):
+            indices = [_get_label_index(label, labels) for label in sort_column]
+            return sorted(
+                rows, key=lambda row: tuple(row[i] for i in indices)
+            )
+        else:
+            raise Exception('unknown sort_column format')
+
+    if sort_key is not None:
+        pairs = [(row, dict(zip(labels, row))) for row in rows]  # type: ignore
+        pairs = sorted(pairs, key=sort_key(pairs[1]))
+        return [pair[0] for pair in pairs]
+
+    return rows
+
+
+def _get_label_index(label: str | int, labels: typing.Sequence[str]) -> int:
+    if isinstance(label, str):
+        return labels.index(label)
+    elif isinstance(label, int):
+        return label
+    else:
+        raise Exception('unknown sort_column format')
 
 
 def _stringify_cells(
@@ -1008,3 +1066,4 @@ def clip_rows(
         return rows[:n_head] + fill_rows + rows[-n_tail:]
     else:
         raise Exception('invalid clip_rows specification')
+
