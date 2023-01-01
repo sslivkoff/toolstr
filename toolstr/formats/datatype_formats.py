@@ -31,6 +31,8 @@ def format(
         return format_number(value, **kwargs)
     elif format_type == 'timestamp':
         return format_timestamp(value, **kwargs)
+    elif format_type == 'nbytes':
+        return format_nbytes(value, **kwargs)
     else:
         raise Exception('unknown format_type: ' + str(format_type))
 
@@ -42,9 +44,14 @@ def format_nbytes(
     commas: bool = False,
     **format_kwargs: typing.Any,
 ) -> str:
+
     if not isinstance(nbytes, int):
-        raise Exception('input must be integer')
-    elif nbytes < 0:
+        if abs(int(nbytes) - nbytes) < 0.000001:
+            nbytes = int(nbytes)
+        else:
+            raise Exception('input must be integer')
+
+    if nbytes < 0:
         raise Exception('input must be non-negative')
     elif nbytes == 0:
         return '0B'
