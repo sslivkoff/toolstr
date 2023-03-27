@@ -83,6 +83,7 @@ def print_table(
     | typing.Sequence[str]
     | typing.Sequence[int]
     | None = None,
+    descending: bool = False,
     missing_columns: typing.Literal['fill', 'clip', 'error'] = 'error',
     empty_str: str = '',
     format: FormatKwargs | None = None,
@@ -126,7 +127,7 @@ def print_table(
     rows, labels = _fix_missing_data(rows, labels, missing_columns, empty_str)
 
     # sort rows
-    rows = _sort_rows(rows, labels, sort_column, sort_key)
+    rows = _sort_rows(rows, labels, sort_column, sort_key, descending)
 
     # add row index
     rows, labels = _add_index(rows, labels, add_row_index, row_start_index)
@@ -506,6 +507,7 @@ def _sort_rows(
     | typing.Sequence[int]
     | None = None,
     sort_key: typing.Callable[..., typing.Any] | None = None,
+    descending: bool = False,
 ) -> list[typing.Sequence[typing.Any]]:
 
     if sort_column is not None and sort_key is not None:
@@ -520,19 +522,26 @@ def _sort_rows(
             raise Exception('must specify labels when specifying sort_column')
         if isinstance(sort_column, (str, int)):
             index = _get_label_index(sort_column, labels)
-            return sorted(rows, key=lambda row: row[index])  # type: ignore
+            sorted_rows = sorted(rows, key=lambda row: row[index])  # type: ignore
         elif isinstance(sort_column, (list, tuple)):
             indices = [_get_label_index(label, labels) for label in sort_column]
-            return sorted(
+            sorted_rows = sorted(
                 rows, key=lambda row: tuple(row[i] for i in indices)
             )
         else:
             raise Exception('unknown sort_column format')
 
+        if descending:
+            sorted_rows = sorted_rows[::-1]
+        return sorted_rows
+
     if sort_key is not None:
         pairs = [(row, dict(zip(labels, row))) for row in rows]  # type: ignore
         pairs = sorted(pairs, key=sort_key(pairs[1]))
-        return [pair[0] for pair in pairs]
+        sorted_rows = [pair[0] for pair in pairs]
+        if descending:
+            sorted_rows = sorted_rows[::-1]
+        return sorted_rows
 
     return rows
 
