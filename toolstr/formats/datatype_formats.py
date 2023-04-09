@@ -11,7 +11,7 @@ from .. import spec
 
 def format(
     value: typing.Any,
-    format_type: typing.Literal['number', 'timestamp'] | None = None,
+    format_type: typing.Literal['number', 'timestamp', 'nbytes'] | None = None,
     **kwargs: typing.Any,
 ) -> str:
 
