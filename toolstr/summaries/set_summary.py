@@ -15,6 +15,7 @@ def print_set_diff(
     rhs_name: str = 'rhs',
     verbose: int = 1,
     include_visuals: bool = True,
+    title: str | None = None,
     **kwargs: typing.Sequence[typing.Any],
 ) -> None:
     if lhs is not None and rhs is not None:
@@ -75,7 +76,10 @@ def print_set_diff(
     else:
         labels = ['', 'size', '% of ∪']
 
-    outlines.print_text_box('Overlap between sets')
+    if title is None:
+        title = 'Overlap between sets'
+    outlines.print_text_box(title)
+
     if relation != '':
         print()
         print(relation)
