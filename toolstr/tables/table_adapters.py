@@ -4,7 +4,7 @@ import typing
 
 if typing.TYPE_CHECKING:
     from typing_extensions import TypeGuard
-    import pandas as pd
+    import pandas as pd  # type: ignore
     import polars as pl
 
 from . import table_utils
