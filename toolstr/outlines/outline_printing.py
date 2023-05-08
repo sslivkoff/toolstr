@@ -50,6 +50,7 @@ def print_outlined_text(
     lower_pad: typing.Optional[int] = None,
     left_pad: typing.Optional[int] = None,
     right_pad: typing.Optional[int] = None,
+    text_style: str | None = None,
     style: str | None = None,
     indent: str | int | None = None,
     **border_style: typing.Any,
@@ -68,6 +69,7 @@ def print_outlined_text(
         lower_pad=lower_pad,
         left_pad=left_pad,
         right_pad=right_pad,
+        text_style=text_style,
         style=style,
         **border_style,
     )
@@ -87,6 +89,7 @@ def print_text_box(
     lower_pad: int = 0,
     left_pad: int = 1,
     right_pad: int = 1,
+    text_style: str | None = None,
     style: str | None = None,
     **border_style: typing.Any,
 ) -> None:
@@ -102,6 +105,7 @@ def print_text_box(
         lower_pad=lower_pad,
         left_pad=left_pad,
         right_pad=right_pad,
+        text_style=text_style,
         style=style,
         **border_style,
     )
@@ -113,6 +117,7 @@ def print_header(
     width: typing.Optional[int] = None,
     justify: typing.Optional[spec.HorizontalJustification] = None,
     pad: int = 0,
+    text_style: str | None = None,
     style: str | None = None,
     **border_style: typing.Any,
 ) -> None:
@@ -125,6 +130,7 @@ def print_header(
         lower_border=True,
         left_border=False,
         right_border=False,
+        text_style=text_style,
         style=style,
         **border_style,
     )
@@ -144,6 +150,7 @@ def get_outlined_text(
     lower_pad: typing.Optional[int] = None,
     left_pad: typing.Optional[int] = None,
     right_pad: typing.Optional[int] = None,
+    text_style: str | None = None,
     style: str | None = None,
     **border_style: typing.Any,
 ) -> str:
@@ -243,6 +250,10 @@ def get_outlined_text(
             + middle_right_postfix
         )
         line = line.rstrip()
+
+        if text_style is not None:
+            line = formats.add_style(line, text_style)
+
         outlined += line + '\n'
 
     # add lower border
