@@ -232,6 +232,10 @@ def get_outlined_text(
     for line in text_lines:
         if formats.get_styled_width(line) > text_width:
             line = line[: text_width - 3] + '...'
+
+        if text_style is not None:
+            line = formats.add_style(line, text_style)
+
         if justify == 'left':
             line = line.ljust(text_width)
         elif justify == 'right':
@@ -250,9 +254,6 @@ def get_outlined_text(
             + middle_right_postfix
         )
         line = line.rstrip()
-
-        if text_style is not None:
-            line = formats.add_style(line, text_style)
 
         outlined += line + '\n'
 
