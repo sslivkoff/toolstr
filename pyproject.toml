@@ -10,7 +10,7 @@ requires-python = ">=3.7"
 dynamic = ["version", "description"]
 license = {file = "LICENSE"}
 dependencies = [
-    "tooltime>=0.1.4",
+    "tooltime>=0.2.10",
     "typing-extensions>=4.0.0",
 ]
 
