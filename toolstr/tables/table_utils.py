@@ -1037,7 +1037,6 @@ def _print_table(
                 file=file,
                 theme=rich.theme.Theme(inherit=False),
                 width=10000,
-                color_system='truecolor',
             )
         console.print(table_as_str)
 
