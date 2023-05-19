@@ -1,5 +1,6 @@
 """toolstr is a suite of str processing tools, including formatting and drawing"""
 
+from .buffers import *
 from .charts import *
 from .formats import *
 from .outlines import *
