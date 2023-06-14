@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import typing
 
 
 @contextlib.contextmanager
@@ -8,7 +9,7 @@ def write_stdout_to_file(
     path: str,
     mode: str = 'w',
     create_dir: bool = True,
-) -> None:
+) -> typing.Generator[None, None, None]:
     import io
     import os
     import sys
