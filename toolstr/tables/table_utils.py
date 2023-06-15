@@ -53,7 +53,6 @@ def transpose_table(
     labels: typing.Sequence[str] | None = None,
     create_labels: bool = False,
 ) -> TableData:
-
     if labels is not None:
         rows = [labels] + list(rows)
     new_rows = list(zip(*rows))
@@ -119,7 +118,6 @@ def print_table(
     column_styles: ColumnData[Style] | None = None,
     label_style: ColumnData[Style] | None = None,
 ) -> str | None:
-
     # filter row separators
     rows, separator_indices = _filter_separator_indices(rows, separate_all_rows)
 
@@ -180,13 +178,11 @@ def print_table(
 
 
 def _should_use_styles(use_styles: bool | None) -> bool:
-
     # check that value of use_styles has proper value
     if not isinstance(use_styles, bool) and use_styles is not None:
         raise Exception('use_styles should be bool or None')
 
     if use_styles is None:
-
         # use styles if rich is importable
         try:
             import rich
@@ -196,7 +192,6 @@ def _should_use_styles(use_styles: bool | None) -> bool:
             use_styles = False
 
     elif use_styles:
-
         # test whether rich can be imported
         try:
             import rich
@@ -210,7 +205,6 @@ def _filter_separator_indices(
     rows: typing.Sequence[None | typing.Sequence[typing.Any]],
     separate_all_rows: bool,
 ) -> tuple[list[typing.Sequence[typing.Any]], set[int]]:
-
     filtered: list[typing.Sequence[typing.Any]] = []
     indices = set()
     for row in rows:
@@ -234,7 +228,6 @@ def _fix_missing_data(
     missing_columns: typing.Literal['clip', 'fill', 'error'],
     empty_str: str,
 ) -> tuple[list[typing.Sequence[typing.Any]], typing.Sequence[str] | None]:
-
     if len(rows) > 0:
         min_columns = 1_000_000_000
         max_columns = 0
@@ -305,7 +298,6 @@ def _stringify_all(
     column_styles: ColumnData[Style] | None,
     label_style: ColumnData[Style] | None,
 ) -> tuple[list[list[str]], list[list[str]], typing.Sequence[int], bool]:
-
     # determine number of columns
     if len(rows) > 0:
         n_columns = len(rows[0])
@@ -370,7 +362,6 @@ def _stringify_all(
     if use_styles is None:
         use_styles = _should_use_styles(use_styles)
     if use_styles:
-
         # arrange column style specifications
         column_styles = _convert_column_dict_to_list(
             column_styles, n_columns, labels
@@ -415,7 +406,6 @@ def _get_column_widths(
     str_cells: list[list[str]],
     max_column_widths: typing.Sequence[int | None] | None,
 ) -> list[int]:
-
     if len(str_cells) > 0:
         n_columns = len(str_cells[0])
     else:
@@ -423,7 +413,6 @@ def _get_column_widths(
     column_widths: list[int] = [0] * n_columns
     for row_str_cells in str_cells:
         for c, str_cell in enumerate(row_str_cells):
-
             if '[' in str_cell:
                 import rich.text
 
@@ -484,7 +473,6 @@ def _convert_column_dict_to_list(
         return [column_data] * n_columns  # type: ignore
 
     elif isinstance(column_data, dict):
-
         if all(isinstance(item, int) for item in column_data.keys()):
             return [column_data.get(c) for c in range(n_columns)]
         elif all(isinstance(item, str) for item in column_data.keys()):
@@ -509,7 +497,6 @@ def _sort_rows(
     sort_key: typing.Callable[..., typing.Any] | None = None,
     descending: bool = False,
 ) -> list[typing.Sequence[typing.Any]]:
-
     if sort_column is not None and sort_key is not None:
         raise Exception('should not specify both sort_key and sort_column')
     for raw_row in rows:
@@ -564,7 +551,6 @@ def _stringify_cells(
 ) -> list[str]:
     row_str_cells = []
     for c, cell in enumerate(row):
-
         if cell is None:
             cell = empty_str
 
@@ -572,14 +558,12 @@ def _stringify_cells(
         if isinstance(cell, str):
             as_str = cell
         else:
-
             # include numpy types
             if (
                 isinstance(cell, (int, float))
                 or type(cell).__name__.startswith('int')
                 or type(cell).__name__.startswith('float')
             ):
-
                 # get format kwargs
                 cell_format: typing.Mapping[str, typing.Any] | None
                 cell_format = None
@@ -628,7 +612,6 @@ def _trim_justify(
         if length == width:
             output.append(cell)
         elif length > width:
-
             # trim
 
             if width >= 3:
@@ -638,7 +621,6 @@ def _trim_justify(
             output.append(trimmed)
 
         else:
-
             # determine justification
             cell_justify = None
             if column_justify is not None:
@@ -660,13 +642,10 @@ def _stylize_rows(
     style: Style | None,
     column_styles: ColumnData[Style] | None,
 ) -> list[list[str]]:
-
     stylized_rows = []
     for r, (row, str_row) in enumerate(zip(rows, str_rows)):
-
         stylized_row = []
         for c, (cell, str_cell) in enumerate(zip(row, str_row)):
-
             # use column style if specified, otherwise use global style
             if column_styles is not None and column_styles[c] is not None:
                 cell_style: Style | None = column_styles[c]
@@ -704,7 +683,6 @@ def _stylize_rows(
 def _process_label_location(
     label_location: HeaderLocation | None,
 ) -> tuple[bool, bool]:
-
     if isinstance(label_location, str):
         top_label = label_location == 'top'
         bottom_label = label_location == 'bottom'
@@ -735,7 +713,6 @@ def _convert_table_to_str(
     outer_gap: int | str | None,
     separator_indices: set[int],
 ) -> str:
-
     import rich.text
 
     # use compact format
@@ -809,7 +786,6 @@ def _convert_table_to_str(
 
     # render label as strs
     if len(str_labels) > 0:
-
         # build label delimiter
         if not label_equals_outer and not label_equals_inner:
             label_vertical = ' '
@@ -863,7 +839,6 @@ def _convert_table_to_str(
 
     # add outer borders
     if outer_border is not None:
-
         # get outer parameters
         if outer_equals_inner:
             outer_left_t = outer_border['left_t']
@@ -1009,7 +984,6 @@ def _build_row_separator(
     outer_gap: str,
     cross_symbol: spec.BorderCharName = 'cross',
 ) -> str:
-
     horizontal = border['horizontal']
     cross = border[cross_symbol]
 
@@ -1027,9 +1001,7 @@ def _print_table(
     console: rich.console.Console | None,
     file: typing.TextIO | None,
 ) -> None:
-
     if use_styles:
-
         if console is None:
             import rich.console
 
@@ -1051,7 +1023,6 @@ def clip_rows(
     clip_position: Literal['start', 'middle', 'end'] = 'end',
     fill: str | None = '...',
 ) -> list[typing.Sequence[typing.Any]]:
-
     if len(rows) <= n:
         return rows
 
