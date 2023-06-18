@@ -115,16 +115,19 @@ def create_nested_diff_str(
     # convert to table
     if styles is None:
         styles = {}
-    return toolstr.print_table(  # type: ignore
+    return toolstr.print_multiline_table(  # type: ignore
         rows=rows,
         labels=['type', 'index', lhs_name, rhs_name],
-        column_justify={'index': 'left'},
+        column_justify={'index': 'left', lhs_name: 'left', rhs_name: 'left'},
+        label_justify='left',
+        vertical_justify='top',
         return_str=True,
-        max_column_widths=[6, 30, 30, 30],
+        max_column_widths=[6, 30, 32, 32],
         compact=3,
         label_style=styles.get('metavar'),
         border=styles.get('content'),
         indent=indent,
+        separate_all_rows=False,
     )
 
 
@@ -153,7 +156,18 @@ def get_nested_diffs(
         return get_dict_diffs(lhs, rhs)
     elif isinstance(lhs, (list, tuple)):
         return get_list_diffs(lhs, rhs)
-    elif isinstance(lhs, (str, int, float, bool)):
+    elif isinstance(lhs, str):
+        size = 32
+        lhs_chunks = [lhs[i : i + size] for i in range(0, len(lhs), size)]
+        rhs_chunks = [rhs[i : i + size] for i in range(0, len(rhs), size)]
+        diff = {
+            'type': 'value',
+            'index': [],
+            'lhs': '\n'.join(lhs_chunks),
+            'rhs': '\n'.join(rhs_chunks),
+        }
+        return [diff]
+    elif isinstance(lhs, (int, float, bool)):
         diff = {'type': 'value', 'index': [], 'lhs': lhs, 'rhs': rhs}
         return [diff]
     else:
