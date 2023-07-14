@@ -92,8 +92,11 @@ def create_nested_diff_str(
         max_depth=max_depth,
         max_branches=max_branches,
         max_branches_per_depth=max_branches_per_depth,
-        max_diffs=max_diffs,
     )
+    add_ellipsis = False
+    if max_diffs is not None and len(diffs) > max_diffs:
+        diffs = diffs[:max_diffs]
+        add_ellipsis = True
 
     # convert diffs to rows
     rows = []
@@ -115,7 +118,7 @@ def create_nested_diff_str(
     # convert to table
     if styles is None:
         styles = {}
-    return toolstr.print_multiline_table(  # type: ignore
+    as_str: str = toolstr.print_multiline_table(  # type: ignore
         rows=rows,
         labels=['type', 'index', lhs_name, rhs_name],
         column_justify={'index': 'left', lhs_name: 'left', rhs_name: 'left'},
@@ -129,6 +132,9 @@ def create_nested_diff_str(
         indent=indent,
         separate_all_rows=False,
     )
+    if add_ellipsis:
+        as_str = as_str + '\n...'
+    return as_str
 
 
 #
@@ -142,7 +148,6 @@ def get_nested_diffs(
     max_depth: int | None = None,
     max_branches: int | None = None,
     max_branches_per_depth: typing.Mapping[int, int] | None = None,
-    max_diffs: int | None = None,
 ) -> typing.Sequence[NestedDiff]:
     diff: NestedDiff
     if nested_equal(lhs, rhs):
