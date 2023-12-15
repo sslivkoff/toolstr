@@ -15,6 +15,9 @@ pub mod box_format;
 /// binary formatting
 pub mod binary_format;
 
+/// multiline formatting
+pub mod multiline_format;
+
 /// number formatting
 pub mod number_format;
 
@@ -31,6 +34,7 @@ pub use binary_format::*;
 pub use bool_format::*;
 pub use box_format::*;
 pub use exceptions::*;
+pub use multiline_format::*;
 pub use number_format::*;
 pub use string_format::*;
 pub use table_formats::*;

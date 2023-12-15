@@ -1,4 +1,7 @@
-use crate::{Column, ColumnFormat, ColumnFormatShorthand, FormatError, Table};
+use crate::{
+    align_line_left, align_line_right, n_lines, width, Column, ColumnFormat, ColumnFormatShorthand,
+    FormatError, Table, VerticalAlign,
+};
 
 const DEFAULT_TABLE_HEIGHT: usize = 30;
 
@@ -158,7 +161,7 @@ impl TableFormatFinal {
         // TODO: take an n_used_columns parameter, for if only subset of columns used
         self.column_formats
             .iter()
-            .map(|f| f.display_name.chars().filter(|&c| c == '\n').count() + 1)
+            .map(|f| n_lines(&f.display_name) + 1)
             .max()
             .unwrap_or(0)
     }
@@ -292,7 +295,7 @@ impl TableFormatFinal {
                 .format(df.column(name)?.data.as_ref())?;
             let used_width = column
                 .iter()
-                .map(|s| s.chars().count())
+                .map(width)
                 // .map(|s| unicode_width::UnicodeWidthStr::width_cjk(s.as_str()))
                 // .map(|s| unicode_width::UnicodeWidthStr::width(s.as_str()))
                 .max()
@@ -321,21 +324,76 @@ impl TableFormatFinal {
         Ok((used_widths, columns))
     }
 
-    fn assemble_rows(&self, columns: Vec<Vec<String>>, rows: &mut Vec<String>, total_width: usize) {
+    fn assemble_rows(
+        &self,
+        columns: Vec<Vec<String>>,
+        rows: &mut Vec<String>,
+        total_width: usize,
+        used_widths: Vec<usize>,
+    ) {
         let n_data_rows = match columns.first() {
             Some(column) => column.len(),
             None => return,
         };
         // println!("N_DATA_ROWS: {}", n_data_rows);
+        // println!("ALL_DATA: {:?}", columns);
+        // println!("USED_WIDTHS: {:?}", n_data_rows);
+        let buffers: Vec<String> = used_widths
+            .iter()
+            .map(|w| " ".repeat(*w).to_string())
+            .collect();
         for r in 0..n_data_rows {
-            let mut row = String::with_capacity(total_width);
+            // split into lines
+            let mut columns_lines: Vec<Vec<String>> = Vec::new();
             for (c, column) in columns.iter().enumerate() {
-                if c != 0 {
-                    row.push_str(self.column_delimiter.as_str())
-                }
-                row.push_str(column[r].as_str())
+                columns_lines.push(
+                    column[r]
+                        .split('\n')
+                        .map(|s| match self.column_formats[c].horizontal_align {
+                            super::column_format::HorizontalAlign::Left => {
+                                align_line_left(s, used_widths[c])
+                            }
+                            super::column_format::HorizontalAlign::Right => {
+                                align_line_right(s, used_widths[c])
+                            }
+                        })
+                        .collect(),
+                )
             }
-            rows.push(row)
+
+            // compute number of lines
+            let n_lines = columns_lines.iter().map(|c| c.len()).max().unwrap_or(0);
+
+            // pad lines based on vertical alignment
+            for (c, column_lines) in columns_lines.iter_mut().enumerate() {
+                if column_lines.len() < n_lines {
+                    match self.column_formats[c].vertical_align {
+                        VerticalAlign::Top => {
+                            for _ in 0..(n_lines - column_lines.len()) {
+                                column_lines.push(buffers[c].clone())
+                            }
+                        }
+                        VerticalAlign::Bottom => {
+                            let _ = column_lines.splice(
+                                0..0,
+                                vec![buffers[c].clone(); n_lines - column_lines.len()],
+                            );
+                        }
+                    }
+                }
+            }
+
+            // build row str
+            for l in 0..n_lines {
+                let mut line = String::with_capacity(total_width);
+                for (c, column_lines) in columns_lines.iter().enumerate() {
+                    if c != 0 {
+                        line.push_str(self.column_delimiter.as_str())
+                    }
+                    line.push_str(column_lines[l].as_str())
+                }
+                rows.push(line)
+            }
         }
     }
 
@@ -359,7 +417,7 @@ impl TableFormatFinal {
                 rows.push(self.render_header_separator_row(&used_widths, total_width));
             }
         };
-        self.assemble_rows(columns, &mut rows, total_width);
+        self.assemble_rows(columns, &mut rows, total_width, used_widths);
         if self.include_summary_row {
             todo!("summary row")
         }

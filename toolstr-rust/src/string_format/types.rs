@@ -52,6 +52,15 @@ impl StringFormat {
 
     /// format string data
     pub fn format<T: AsRef<str>>(&self, s: T) -> Result<String, FormatError> {
+        let mut lines = Vec::new();
+        for line in s.as_ref().split('\n') {
+            lines.push(self.format_line(line)?)
+        }
+        Ok(lines.join("\n"))
+    }
+
+    /// format single line of data
+    fn format_line<T: AsRef<str>>(&self, s: T) -> Result<String, FormatError> {
         let s = s.as_ref();
         if s.len() < self.min_width {
             let pad = self.fill_char.to_string().repeat(self.min_width - s.len());

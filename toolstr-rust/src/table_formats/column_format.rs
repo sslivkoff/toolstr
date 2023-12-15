@@ -1,8 +1,8 @@
 use crate::{
-    BinaryFormat, BoolFormat, CellFormat, CellFormatShorthand, ColumnData, ColumnType, FormatError,
-    NumberFormat, StringFormat, UnknownFormat,
+    width, BinaryFormat, BoolFormat, CellFormat, CellFormatShorthand, ColumnData, ColumnType,
+    FormatError, NumberFormat, StringFormat, UnknownFormat,
 };
-use unicode_truncate::{Alignment, UnicodeTruncateStr};
+// use unicode_truncate::{Alignment, UnicodeTruncateStr};
 
 /// column format shorthand
 #[derive(Debug, Clone)]
@@ -13,8 +13,10 @@ pub struct ColumnFormatShorthand {
     pub display_name: String,
     /// format
     pub format: CellFormatShorthand,
-    /// alignment
-    pub align: ColumnAlign,
+    /// horizontal alignment
+    pub horizontal_align: HorizontalAlign,
+    /// vertical alignment
+    pub vertical_align: VerticalAlign,
 }
 
 impl ColumnFormatShorthand {
@@ -24,7 +26,8 @@ impl ColumnFormatShorthand {
             name: self.name,
             display_name: self.display_name,
             format: self.format.finalize(column_type)?,
-            align: self.align,
+            horizontal_align: self.horizontal_align,
+            vertical_align: self.vertical_align,
         })
     }
 }
@@ -39,7 +42,8 @@ impl Default for ColumnFormatShorthand {
             name: "".to_string(),
             display_name: "".to_string(),
             format: CellFormatShorthand::Unknown(format),
-            align: ColumnAlign::Right,
+            horizontal_align: HorizontalAlign::Right,
+            vertical_align: VerticalAlign::Top,
         }
     }
 }
@@ -53,29 +57,34 @@ pub struct ColumnFormat {
     pub display_name: String,
     /// format
     pub format: CellFormat,
-    /// alignment
-    pub align: ColumnAlign,
+    /// horizontal alignment
+    pub horizontal_align: HorizontalAlign,
+    /// vertical alignment
+    pub vertical_align: VerticalAlign,
 }
 
-/// column alignment
+/// horizontal alignment
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ColumnAlign {
+pub enum HorizontalAlign {
     /// left
     Left,
     /// right
     Right,
 }
 
+/// vertical alignment
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum VerticalAlign {
+    /// top
+    Top,
+    /// bottom
+    Bottom,
+}
+
 impl ColumnFormat {
     /// get header width
     pub fn header_width(&self) -> usize {
-        self.display_name
-            .split('\n')
-            // .map(unicode_width::UnicodeWidthStr::width)
-            // .map(unicode_width::UnicodeWidthStr::width_cjk)
-            .map(|s| s.chars().count())
-            .max()
-            .unwrap_or(0)
+        width(&self.display_name)
     }
 
     /// get min width
@@ -154,25 +163,19 @@ impl ColumnFormat {
         };
         let formatted = formatted?;
 
-        let max_width = formatted
-            .iter()
-            // .map(|s| unicode_width::UnicodeWidthStr::width(s.as_str()))
-            // .map(|s| unicode_width::UnicodeWidthStr::width_cjk(s.as_str()))
-            .map(|s| s.chars().count())
-            .max()
-            .unwrap_or(0);
+        // let max_width = formatted.iter().map(width).max().unwrap_or(0);
 
-        let formatted = if self.align == ColumnAlign::Right {
-            formatted
-                .into_iter()
-                .map(|s| s.unicode_pad(max_width, Alignment::Right, true).to_string())
-                .collect()
-        } else {
-            formatted
-                .into_iter()
-                .map(|s| s.unicode_pad(max_width, Alignment::Left, true).to_string())
-                .collect()
-        };
+        // let formatted = if self.horizontal_align == HorizontalAlign::Right {
+        //     formatted
+        //         .into_iter()
+        //         // .map(|s| s.unicode_pad(max_width, Alignment::Right, true).to_string())
+        //         .collect()
+        // } else {
+        //     formatted
+        //         .into_iter()
+        //         // .map(|s| s.unicode_pad(max_width, Alignment::Left, true).to_string())
+        //         .collect()
+        // };
 
         Ok(formatted)
     }
