@@ -5,7 +5,7 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT"
 homepage = "https://github.com/sslivkoff/toolstr"
-repository = "https://github.com/paradigmxyz/cryo"
+repository = "https://github.com/sslivkoff/toolstr"
 
 [dependencies]
 colored = { git = "https://github.com/colored-rs/colored", rev = "d4da0f4192c912816ef9baaaa0768f86167ea849" }
