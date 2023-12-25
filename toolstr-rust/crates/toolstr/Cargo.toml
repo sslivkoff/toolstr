@@ -8,7 +8,8 @@ homepage = "https://github.com/sslivkoff/toolstr"
 repository = "https://github.com/sslivkoff/toolstr"
 
 [dependencies]
-colored = { git = "https://github.com/colored-rs/colored", rev = "d4da0f4192c912816ef9baaaa0768f86167ea849" }
+# colored = { git = "https://github.com/colored-rs/colored", rev = "d4da0f4192c912816ef9baaaa0768f86167ea849" }
+toolstr_colored = { version = "2.1.1", path = "../toolstr-colored" }
 chrono = "0.4.31"
 polars = { version = "0.35.4", features = [
     "parquet",

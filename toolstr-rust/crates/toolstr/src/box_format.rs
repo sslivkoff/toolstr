@@ -1,5 +1,5 @@
 use crate::FormatError;
-use colored::{Color, Colorize};
+use toolstr_colored::{Color, Colorize};
 
 /// Theme
 #[derive(Clone)]
@@ -69,16 +69,16 @@ impl Default for BorderChars {
 
 /// font style
 #[derive(Default, Clone, Debug)]
-pub struct FontStyle(pub colored::ColoredString);
+pub struct FontStyle(pub toolstr_colored::ColoredString);
 
-impl From<colored::ColoredString> for FontStyle {
-    fn from(value: colored::ColoredString) -> FontStyle {
+impl From<toolstr_colored::ColoredString> for FontStyle {
+    fn from(value: toolstr_colored::ColoredString) -> FontStyle {
         FontStyle(value)
     }
 }
 
-impl From<colored::Color> for FontStyle {
-    fn from(value: colored::Color) -> FontStyle {
+impl From<toolstr_colored::Color> for FontStyle {
+    fn from(value: toolstr_colored::Color) -> FontStyle {
         FontStyle("".color(value))
     }
 }

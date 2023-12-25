@@ -39,4 +39,4 @@ pub use number_format::*;
 pub use string_format::*;
 pub use table_formats::*;
 
-pub use colored::{Color, Colorize};
+pub use toolstr_colored::{Color, Colorize};
