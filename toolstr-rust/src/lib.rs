@@ -38,3 +38,5 @@ pub use multiline_format::*;
 pub use number_format::*;
 pub use string_format::*;
 pub use table_formats::*;
+
+pub use colored::{Color, Colorize};

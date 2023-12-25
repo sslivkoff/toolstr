@@ -1,4 +1,5 @@
-use colored::Colorize;
+use crate::FormatError;
+use colored::{Color, Colorize};
 
 /// Theme
 #[derive(Clone)]
@@ -67,8 +68,20 @@ impl Default for BorderChars {
 }
 
 /// font style
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 pub struct FontStyle(pub colored::ColoredString);
+
+impl From<colored::ColoredString> for FontStyle {
+    fn from(value: colored::ColoredString) -> FontStyle {
+        FontStyle(value)
+    }
+}
+
+impl From<colored::Color> for FontStyle {
+    fn from(value: colored::Color) -> FontStyle {
+        FontStyle("".color(value))
+    }
+}
 
 impl FontStyle {
     /// format string using style
@@ -83,6 +96,34 @@ impl FontStyle {
     pub fn println<T: AsRef<str>>(&self, text: T) {
         println!("{}", self.format(text))
     }
+
+    /// make style bold
+    pub fn bold(&mut self) {
+        self.0 = self.0.clone().bold();
+    }
+}
+
+/// convert a test string to a Color
+pub fn hex_to_color(hex: &str) -> Result<Color, FormatError> {
+    // Remove '#' if it exists
+    let hex = hex.strip_prefix('#').unwrap_or(hex);
+
+    // Check if the string is of the correct length
+    if hex.len() != 6 {
+        return Err(FormatError::InvalidFormat(
+            "Invalid length for a hex color string".to_string(),
+        ));
+    }
+
+    // Parse each color component
+    let r = u8::from_str_radix(&hex[0..2], 16)
+        .map_err(|_| FormatError::InvalidFormat("Invalid hex value for red".to_string()))?;
+    let g = u8::from_str_radix(&hex[2..4], 16)
+        .map_err(|_| FormatError::InvalidFormat("Invalid hex value for green".to_string()))?;
+    let b = u8::from_str_radix(&hex[4..6], 16)
+        .map_err(|_| FormatError::InvalidFormat("Invalid hex value for blue".to_string()))?;
+
+    Ok(Color::TrueColor { r, g, b })
 }
 
 /// convert to title style

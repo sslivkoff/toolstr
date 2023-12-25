@@ -1,6 +1,6 @@
 use crate::{
     align_line_left, align_line_right, n_lines, width, Column, ColumnFormat, ColumnFormatShorthand,
-    FormatError, Table, VerticalAlign,
+    FontStyle, FormatError, Table, VerticalAlign,
 };
 
 const DEFAULT_TABLE_HEIGHT: usize = 30;
@@ -30,6 +30,10 @@ pub struct TableFormat {
     pub max_render_width: Option<usize>,
     /// indent
     pub indent: usize,
+    /// border font style
+    pub border_font_style: Option<FontStyle>,
+    /// label font style
+    pub label_font_style: Option<FontStyle>,
 }
 
 impl Default for TableFormat {
@@ -46,6 +50,8 @@ impl Default for TableFormat {
             render_height: None,
             max_render_width: None,
             indent: 0,
+            border_font_style: None,
+            label_font_style: None,
         }
     }
 }
@@ -75,9 +81,24 @@ pub struct TableFormatFinal {
     pub max_render_width: usize,
     /// indent
     pub indent: usize,
+    /// border font style
+    pub border_font_style: FontStyle,
+    /// label font style
+    pub label_font_style: FontStyle,
 }
 
 impl TableFormat {
+    ///
+    pub fn add_column(&mut self, column_format: ColumnFormatShorthand) {
+        if self.column_formats.is_none() {
+            self.column_formats = Some(Vec::new());
+        }
+
+        if let Some(column_formats) = &mut self.column_formats {
+            column_formats.push(column_format);
+        }
+    }
+
     /// format dataframe as String
     pub fn print(&self, df: Table) -> Result<(), FormatError> {
         let fmt = self.finalize(df.clone())?;
@@ -139,8 +160,22 @@ impl TableFormat {
             render_height: self.render_height.unwrap_or(DEFAULT_TABLE_HEIGHT),
             max_render_width,
             indent: self.indent,
+            border_font_style: self.border_font_style.clone().unwrap_or_default(),
+            label_font_style: self.label_font_style.clone().unwrap_or_default(),
         };
         Ok(fmt)
+    }
+
+    /// set border font style
+    pub fn border_font_style<T: Into<FontStyle>>(mut self, font_style: T) -> Self {
+        self.border_font_style = Some(font_style.into());
+        self
+    }
+
+    /// set label font style
+    pub fn label_font_style<T: Into<FontStyle>>(mut self, font_style: T) -> Self {
+        self.label_font_style = Some(font_style.into());
+        self
     }
 }
 
@@ -188,7 +223,11 @@ impl TableFormatFinal {
         for (c, width) in used_widths.iter().enumerate() {
             if c != 0 {
                 for row in rows.iter_mut() {
-                    row.push_str(self.column_delimiter.as_str());
+                    row.push_str(
+                        self.border_font_style
+                            .format(&self.column_delimiter)
+                            .as_str(),
+                    );
                 }
             }
             let name = self.column_formats[c].display_name.as_str();
@@ -198,7 +237,8 @@ impl TableFormatFinal {
                 row.push_str(" ".repeat(*width).as_str());
             }
             for (row, line) in rows.iter_mut().skip(bound).zip(lines) {
-                row.push_str(format!("{:>width$}", line, width = width).as_str());
+                let content = format!("{:>width$}", line, width = width);
+                row.push_str(self.label_font_style.format(content).as_str());
             }
         }
 
@@ -207,10 +247,16 @@ impl TableFormatFinal {
 
     fn render_header_separator_row(&self, used_widths: &[usize], total_width: usize) -> String {
         let mut row = String::with_capacity(total_width);
-        let separator = self.header_separator_char.to_string();
+        let separator = self
+            .border_font_style
+            .format(self.header_separator_char.to_string());
         for (c, width) in used_widths.iter().enumerate() {
             if c != 0 {
-                row.push_str(self.header_separator_delimiter.as_str());
+                row.push_str(
+                    self.border_font_style
+                        .format(&self.header_separator_delimiter)
+                        .as_str(),
+                );
             }
             row.push_str(separator.repeat(*width).as_str());
         }
@@ -388,9 +434,17 @@ impl TableFormatFinal {
                 let mut line = String::with_capacity(total_width);
                 for (c, column_lines) in columns_lines.iter().enumerate() {
                     if c != 0 {
-                        line.push_str(self.column_delimiter.as_str())
+                        line.push_str(
+                            self.border_font_style
+                                .format(&self.column_delimiter)
+                                .as_str(),
+                        )
                     }
-                    line.push_str(column_lines[l].as_str())
+                    if let Some(style) = &self.column_formats[c].font_style {
+                        line.push_str(style.format(column_lines[l].clone()).as_str())
+                    } else {
+                        line.push_str(column_lines[l].as_str())
+                    }
                 }
                 rows.push(line)
             }

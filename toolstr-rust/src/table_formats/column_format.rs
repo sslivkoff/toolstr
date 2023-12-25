@@ -1,6 +1,6 @@
 use crate::{
     width, BinaryFormat, BoolFormat, CellFormat, CellFormatShorthand, ColumnData, ColumnType,
-    FormatError, NumberFormat, StringFormat, UnknownFormat,
+    FontStyle, FormatError, NumberFormat, StringFormat, UnknownFormat,
 };
 // use unicode_truncate::{Alignment, UnicodeTruncateStr};
 
@@ -17,6 +17,8 @@ pub struct ColumnFormatShorthand {
     pub horizontal_align: HorizontalAlign,
     /// vertical alignment
     pub vertical_align: VerticalAlign,
+    /// font style
+    pub font_style: Option<FontStyle>,
 }
 
 impl ColumnFormatShorthand {
@@ -28,6 +30,7 @@ impl ColumnFormatShorthand {
             format: self.format.finalize(column_type)?,
             horizontal_align: self.horizontal_align,
             vertical_align: self.vertical_align,
+            font_style: self.font_style,
         })
     }
 }
@@ -44,6 +47,7 @@ impl Default for ColumnFormatShorthand {
             format: CellFormatShorthand::Unknown(format),
             horizontal_align: HorizontalAlign::Right,
             vertical_align: VerticalAlign::Top,
+            font_style: None,
         }
     }
 }
@@ -61,6 +65,8 @@ pub struct ColumnFormat {
     pub horizontal_align: HorizontalAlign,
     /// vertical alignment
     pub vertical_align: VerticalAlign,
+    /// font style
+    pub font_style: Option<FontStyle>,
 }
 
 /// horizontal alignment
@@ -272,6 +278,12 @@ impl ColumnFormatShorthand {
     /// set format
     pub fn set_format<T: Into<CellFormatShorthand>>(mut self, format: T) -> ColumnFormatShorthand {
         self.format = format.into();
+        self
+    }
+
+    /// set format
+    pub fn font_style<T: Into<FontStyle>>(mut self, font_style: T) -> ColumnFormatShorthand {
+        self.font_style = Some(font_style.into());
         self
     }
 }
