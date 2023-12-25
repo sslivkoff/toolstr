@@ -286,4 +286,10 @@ impl ColumnFormatShorthand {
         self.font_style = Some(font_style.into());
         self
     }
+
+    /// left justify
+    pub fn left_justify(mut self) -> ColumnFormatShorthand {
+        self.horizontal_align = HorizontalAlign::Left;
+        self
+    }
 }
