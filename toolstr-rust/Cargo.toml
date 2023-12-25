@@ -1,24 +1,16 @@
-[package]
-name = "toolstr"
-description = "utilities for formatting data into String's"
+
+[workspace]
+members = ["crates/toolstr"]
+
+# Explicitly set the resolver to version 2, which is the default for packages with edition >= 2021 but not virtual workspaces.
+# https://doc.rust-lang.org/edition-guide/rust-2021/default-cargo-resolver.html
+resolver = "2"
+
+[workspace.package]
 version = "0.1.0"
 edition = "2021"
-license = "MIT"
+license = "MIT OR Apache-2.0"
 homepage = "https://github.com/sslivkoff/toolstr"
 repository = "https://github.com/sslivkoff/toolstr"
+exclude = [".github/"]
 
-[dependencies]
-colored = { git = "https://github.com/colored-rs/colored", rev = "d4da0f4192c912816ef9baaaa0768f86167ea849" }
-chrono = "0.4.31"
-polars = { version = "0.35.4", features = [
-    "parquet",
-    "string_encoding",
-    "polars-lazy",
-    "lazy",
-    "binary_encoding",
-    "json",
-    "dtype-struct",
-    "mode",
-] }
-regex = "1.3.6"
-unicode-truncate = "0.2.0"
