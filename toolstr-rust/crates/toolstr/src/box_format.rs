@@ -22,6 +22,26 @@ impl Default for Theme {
     }
 }
 
+impl Theme {
+    /// set border chars
+    pub fn with_border_chars(mut self, border_chars: BorderChars) -> Theme {
+        self.border_chars = border_chars;
+        self
+    }
+
+    /// set border style
+    pub fn with_border_style(mut self, border_style: FontStyle) -> Theme {
+        self.border_style = border_style;
+        self
+    }
+
+    /// set title style
+    pub fn with_title_style(mut self, title_style: FontStyle) -> Theme {
+        self.title_style = title_style;
+        self
+    }
+}
+
 /// border chars
 #[derive(Clone)]
 pub struct BorderChars {
@@ -175,9 +195,9 @@ pub fn print_text_box<A: AsRef<str>, T: ToTheme>(text: A, style: T) {
     theme.border_style.println(top);
     println!(
         "{} {} {}",
-        theme.border_chars.vertical,
+        theme.border_style.format(&theme.border_chars.vertical),
         theme.title_style.format(text),
-        theme.border_chars.vertical
+        theme.border_style.format(&theme.border_chars.vertical),
     );
     let bottom = format!(
         "{}{}{}",
