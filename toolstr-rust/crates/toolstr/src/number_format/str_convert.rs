@@ -3,23 +3,7 @@ use super::types::{
 };
 use crate::FormatError;
 use regex::{Captures, Regex};
-use std::{fmt, str::FromStr};
-
-impl fmt::Display for FormatError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // let message = match self {
-        //     FormatError::CouldNotParseFormatType => "could not parse format type",
-        //     FormatError::CouldNotDecomposeCoefficientExponent => {
-        //         "could not deomponse coefficient exponent"
-        //     }
-        //     FormatError::CouldNotCreateRegex => "could not create regex",
-        //     FormatError::CouldNotMatchRegex => "regex could not match",
-        //     FormatError::InvalidFormat(s) => s,
-        // };
-        let s = format!("{:?}", self);
-        write!(f, "{}", s)
-    }
-}
+use std::str::FromStr;
 
 impl FromStr for NumberAlign {
     type Err = FormatError;

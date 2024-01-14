@@ -1794,11 +1794,12 @@ dependencies = [
 
 [[package]]
 name = "toolstr"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "polars",
  "regex",
+ "thiserror",
  "toolstr_colored",
  "unicode-truncate",
 ]
