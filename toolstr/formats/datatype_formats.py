@@ -42,21 +42,19 @@ def format_nbytes(
     *,
     decimals: int = 2,
     commas: bool = False,
+    bibytes: bool = False,
     **format_kwargs: typing.Any,
 ) -> str:
-
-    if not isinstance(nbytes, int):
-        if abs(int(nbytes) - nbytes) < 0.000001:
-            nbytes = int(nbytes)
-        else:
-            raise Exception('input must be integer')
 
     if nbytes < 0:
         raise Exception('input must be non-negative')
     elif nbytes == 0:
         return '0B'
     else:
-        prefixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+        if bibytes:
+            prefixes = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
+        else:
+            prefixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
         divisions = 0
         while nbytes >= 1024:
             nbytes = nbytes / 1024
