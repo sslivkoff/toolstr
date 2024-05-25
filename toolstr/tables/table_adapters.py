@@ -11,18 +11,59 @@ from . import table_utils
 
 
 def print_dataframe_as_table(
-    df: pl.DataFrame | pd.DataFrame,
+    df: pl.DataFrame
+    | pd.DataFrame
+    | typing.Sequence[pl.DataFrame | pd.DataFrame],
     columns: typing.Sequence[typing.Any] | None = None,
     include_index: bool = True,
     **table_kwargs: typing.Any,
 ) -> str | None:
+    if _is_polars_dataframe(df) or _is_pandas_dataframe(df):
+        rows, columns = _dataframe_to_rows(
+            df, include_index=include_index, columns=columns
+        )
+    elif isinstance(df, (list, tuple)):
+        rows = []
+        candidate_columns = None
+        for item in df:
+            if _is_polars_dataframe(item) or _is_pandas_dataframe(item):
+                df_rows, df_columns = _dataframe_to_rows(
+                    item, include_index=include_index, columns=columns
+                )
+                rows += df_rows
+                if candidate_columns is None:
+                    candidate_columns = df_columns
+                else:
+                    if candidate_columns != df_columns:
+                        raise Exception('columns do not match')
+            elif item is None:
+                rows.append(None)
+            elif isinstance(item, (list, tuple)):
+                rows += item
+            else:
+                raise Exception('invalid format')
+        columns = candidate_columns
+
+    else:
+        raise Exception('invalid dataframe format: ' + str(type(df)))
+
+    return table_utils.print_table(rows=rows, labels=columns, **table_kwargs)
+
+
+def _dataframe_to_rows(
+    df: pl.DataFrame | pd.DataFrame,
+    include_index: bool = True,
+    columns: typing.Sequence[typing.Any] | None = None,
+) -> tuple[typing.Sequence[typing.Sequence[typing.Any]], typing.Sequence[str]]:
 
     if _is_polars_dataframe(df):
+        if columns is not None:
+            df = df.select(columns)
+        if columns is None:
+            columns = list(df.columns)
         rows = df.rows()
-        columns = list(df.columns)
 
     elif _is_pandas_dataframe(df):
-
         # promote index columns to plain columns
         if include_index:
             if df.index.name is not None:
@@ -45,9 +86,9 @@ def print_dataframe_as_table(
         rows = df.values.tolist()
 
     else:
-        raise Exception('unknown dataframe type: ' + str(type(df)))
+        raise Exception('invalid dataframe format: ' + str(type(df)))
 
-    return table_utils.print_table(rows=rows, labels=columns, **table_kwargs)
+    return rows, columns
 
 
 def _is_polars_dataframe(df: typing.Any) -> TypeGuard[pl.DataFrame]:
@@ -71,7 +112,6 @@ def print_dict_of_lists_as_table(
     keys: typing.Sequence[typing.Any] | None = None,
     **table_kwargs: typing.Any,
 ) -> str | None:
-
     # determine keys
     if keys is None:
         keys = list(dict_of_lists.keys())
@@ -87,7 +127,6 @@ def print_list_of_dicts_as_table(
     keys: typing.Sequence[typing.Any] | None = None,
     **table_kwargs: typing.Any,
 ) -> str | None:
-
     # determine keys
     if keys is None:
         keys = []
