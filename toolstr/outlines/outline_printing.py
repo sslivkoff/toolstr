@@ -93,14 +93,10 @@ def print_text_box(
     style: str | None = None,
     **border_style: typing.Any,
 ) -> None:
-    print_outlined_text(
+    as_str = get_text_box_str(
         text,
         width=width,
         justify=justify,
-        upper_border=True,
-        lower_border=True,
-        left_border=True,
-        right_border=True,
         upper_pad=upper_pad,
         lower_pad=lower_pad,
         left_pad=left_pad,
@@ -109,6 +105,7 @@ def print_text_box(
         style=style,
         **border_style,
     )
+    print(as_str)
 
 
 def print_header(
@@ -121,19 +118,16 @@ def print_header(
     style: str | None = None,
     **border_style: typing.Any,
 ) -> None:
-    print_outlined_text(
+    as_str = get_header_str(
         text,
         width=width,
         justify=justify,
         pad=pad,
-        upper_border=False,
-        lower_border=True,
-        left_border=False,
-        right_border=False,
         text_style=text_style,
         style=style,
         **border_style,
     )
+    print(as_str)
 
 
 def get_outlined_text(
@@ -271,3 +265,60 @@ def get_outlined_text(
         outlined = formats.add_style(outlined, style)
 
     return outlined
+
+
+def get_text_box_str(
+    text: str,
+    *,
+    width: typing.Optional[int] = None,
+    justify: typing.Optional[spec.HorizontalJustification] = None,
+    upper_pad: int = 0,
+    lower_pad: int = 0,
+    left_pad: int = 1,
+    right_pad: int = 1,
+    text_style: str | None = None,
+    style: str | None = None,
+    **border_style: typing.Any,
+) -> str:
+    return get_outlined_text(
+        text,
+        width=width,
+        justify=justify,
+        upper_border=True,
+        lower_border=True,
+        left_border=True,
+        right_border=True,
+        upper_pad=upper_pad,
+        lower_pad=lower_pad,
+        left_pad=left_pad,
+        right_pad=right_pad,
+        text_style=text_style,
+        style=style,
+        **border_style,
+    )
+
+
+def get_header_str(
+    text: str,
+    *,
+    width: typing.Optional[int] = None,
+    justify: typing.Optional[spec.HorizontalJustification] = None,
+    pad: int = 0,
+    text_style: str | None = None,
+    style: str | None = None,
+    **border_style: typing.Any,
+) -> str:
+    return get_outlined_text(
+        text,
+        width=width,
+        justify=justify,
+        pad=pad,
+        upper_border=False,
+        lower_border=True,
+        left_border=False,
+        right_border=False,
+        text_style=text_style,
+        style=style,
+        **border_style,
+    )
+
