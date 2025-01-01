@@ -105,7 +105,7 @@ def print_text_box(
         style=style,
         **border_style,
     )
-    print(as_str)
+    formats.print(as_str)
 
 
 def print_header(
@@ -127,7 +127,7 @@ def print_header(
         style=style,
         **border_style,
     )
-    print(as_str)
+    formats.print(as_str)
 
 
 def get_outlined_text(
