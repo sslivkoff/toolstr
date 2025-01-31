@@ -104,6 +104,7 @@ def format_number(
     order_of_magnitude: bool = False,
     oom_blank: str = '',
     nan: str = '-',
+    match_width: typing.SupportsFloat | None = None,
 ) -> str:
     """
     TODO:
@@ -111,8 +112,29 @@ def format_number(
     - signed
     """
 
+    if match_width is not None:
+        match_value = format_number(
+            value=match_width,
+            percentage=percentage,
+            scientific=scientific,
+            signed=signed,
+            commas=commas,
+            decimals=decimals,
+            nonfractional_decimals=nonfractional_decimals,
+            fractional_decimals=fractional_decimals,
+            trailing_zeros=trailing_zeros,
+            prefix=prefix,
+            postfix=postfix,
+            order_of_magnitude=order_of_magnitude,
+            oom_blank=oom_blank,
+            nan=nan,
+        )
+
     if math.isnan(value):
-        return nan
+        if match_width is None:
+            return nan
+        else:
+            return nan.rjust(len(match_value))
 
     if trailing_zeros is None:
         trailing_zeros = decimals is not None or order_of_magnitude
@@ -205,7 +227,10 @@ def format_number(
     if postfix is not None:
         formatted = formatted + postfix
 
-    return formatted
+    if match_width is None:
+        return formatted
+    else:
+        return formatted.rjust(len(match_value))
 
 
 def format_change(
